@@ -1,0 +1,27 @@
+{
+  "name": "@rocket/emails",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@react-email/components": "^0.5.7",
+    "@rocket/config": "workspace:*",
+    "@rocket/shared": "workspace:*",
+    "nodemailer": "^7.0.13",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@rocket/typescript-config": "workspace:*",
+    "@types/node": "^22.18.13",
+    "@types/nodemailer": "^7.0.12",
+    "@types/react": "^19.2.17",
+    "typescript": "^5.9.3"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "name": "rocketreality",
+  "private": true,
+  "packageManager": "pnpm@10.28.0",
+  "engines": {
+    "node": ">=22.11.0",
+    "pnpm": "^10"
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "db:generate": "pnpm --filter @rocket/db generate",
+    "db:migrate": "pnpm --filter @rocket/db migrate",
+    "db:seed": "pnpm --filter @rocket/db seed"
+  },
+  "devDependencies": {
+    "prettier": "^3.6.2",
+    "turbo": "^2.5.8"
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "name": "@rocket/db",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./schema": "./src/schema/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "generate": "drizzle-kit generate",
+    "migrate": "tsx src/migrate.ts",
+    "seed": "tsx src/seed/index.ts",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@rocket/config": "workspace:*",
+    "@rocket/shared": "workspace:*",
+    "drizzle-orm": "^0.45.2",
+    "pg": "^8.16.3",
+    "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "@rocket/typescript-config": "workspace:*",
+    "@types/node": "^22.18.13",
+    "@types/pg": "^8.15.6",
+    "better-auth": "^1.3.34",
+    "drizzle-kit": "^0.31.6",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  }
+}

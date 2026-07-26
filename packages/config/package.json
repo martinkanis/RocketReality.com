@@ -1,0 +1,20 @@
+{
+  "name": "@rocket/config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@rocket/typescript-config": "workspace:*",
+    "@types/node": "^22.18.13",
+    "typescript": "^5.9.3"
+  }
+}

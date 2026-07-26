@@ -1,0 +1,66 @@
+@import 'tailwindcss';
+
+/* Design systém RocketReality — ProLife paleta (emerald + gold na teplém pozadí). */
+@theme {
+  --color-brand-50: #eef5f3;
+  --color-brand-100: #d7e7e2;
+  --color-brand-200: #a8cbc0;
+  --color-brand-300: #79af9e;
+  --color-brand-400: #4a937c;
+  --color-brand-500: #1f6b5a;
+  --color-brand-600: #245e57;
+  --color-brand-700: #1a433e;
+  --color-brand-800: #0f332f;
+  --color-brand-900: #112c29;
+  --color-brand-950: #050e0d;
+  --color-gold-300: #d9bc88;
+  --color-gold-400: #cfb17b;
+  --color-gold-600: #9c7c40;
+  --color-gold-800: #70582d;
+  --color-background: #f6f3ed;
+  --color-foreground: #4d585d;
+  --color-heading: #1a433e;
+  --color-surface: #ffffff;
+  --color-surface-alt: #eef0f1;
+  --color-primary: #1a433e;
+  --color-primary-hover: #0f332f;
+  --color-primary-foreground: #ffffff;
+  --color-accent: #cfb17b;
+  --color-accent-hover: #d9bc88;
+  --color-accent-foreground: #70582d;
+  --color-muted: #eef0f1;
+  --color-muted-foreground: #6b777d;
+  --color-border: #d7e7e2;
+  --color-input: #ffffff;
+  --color-ring: #4a937c;
+  --color-destructive: #b3261e;
+  --color-destructive-bg: rgb(219 68 55 / 0.12);
+  --color-success: #16a34a;
+  --color-success-bg: #e8f6ec;
+  --color-warning: #b45309;
+  --color-warning-bg: #fef3c7;
+  --color-info: #2563eb;
+  --color-info-bg: #eff6ff;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 32px;
+  --shadow-soft: 0 18px 35px rgb(26 67 62 / 0.12);
+  --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    color: var(--color-heading);
+  }
+}

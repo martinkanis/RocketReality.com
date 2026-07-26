@@ -1,0 +1,27 @@
+{
+  "name": "@rocket/core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@rocket/config": "workspace:*",
+    "@rocket/db": "workspace:*",
+    "@rocket/shared": "workspace:*",
+    "uuid": "^13.0.0",
+    "zod": "^4.1.12",
+    "drizzle-orm": "^0.45.2"
+  },
+  "devDependencies": {
+    "@rocket/typescript-config": "workspace:*",
+    "@types/node": "^22.18.13",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  }
+}
