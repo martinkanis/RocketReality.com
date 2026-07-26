@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { href: '/prodej/byty', label: 'Prodej' },
   { href: '/pronajem/byty', label: 'Pronájem' },
   { href: '/drazby/byty', label: 'Dražby' },
+  { href: '/mapa', label: 'Mapa' },
   { href: '/realitni-kancelare', label: 'Realitní kanceláře' },
 ] as const
 

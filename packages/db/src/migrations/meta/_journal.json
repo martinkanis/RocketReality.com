@@ -29,6 +29,13 @@
       "when": 1785093073930,
       "tag": "0003_reward_payouts",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1785094066099,
+      "tag": "0004_enforce_srid",
+      "breakpoints": true
     }
   ]
 }
