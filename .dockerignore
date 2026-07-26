@@ -1,0 +1,14 @@
+.git
+.claude
+.turbo
+**/.turbo
+node_modules
+**/node_modules
+**/.next
+**/dist
+docker
+chart
+.env
+.env.*
+!.env.example
+*.md

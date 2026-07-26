@@ -1,0 +1,6 @@
+apiVersion: v2
+name: rocketreality
+description: RocketReality — realitní portál (Next.js web + pg-boss worker) pro rock8 cloud
+type: application
+version: 0.1.0
+appVersion: '0.1.0'

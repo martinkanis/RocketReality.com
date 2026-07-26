@@ -1,0 +1,100 @@
+# Nasazení na rock8 cloud (stejný vzor jako rock8rental: image se buildí
+# z Dockerfiles v tomto repu a pushuje do Harboru, chart se nasazuje helmem).
+#
+# Před prvním nasazením musí v cílovém namespace existovat:
+#   1. Secret `rocketreality-env` (viz `existingSecret`) s klíči:
+#        DATABASE_URL          — PostgreSQL s podporou PostGIS (migrace si
+#                                extensions postgis/unaccent/pg_trgm/citext
+#                                vytvoří samy, DB image je ale musí umět)
+#        AUTH_SECRET           — better-auth secret (min. 16 znaků)
+#        S3_ACCESS_KEY_ID      — S3-kompatibilní storage pro fotky
+#        S3_SECRET_ACCESS_KEY
+#      a volitelně SMTP_USER, SMTP_PASSWORD (bez nich jde SMTP anonymně).
+#   2. Harbor pull secret (viz `imagePullSecrets`), pokud registry vyžaduje login.
+#
+# Nesecret konfigurace (APP_URL, S3_*, SMTP_*, …) je v `envs` níže — čte ji
+# loadEnv z @rocket/config, sdílí ji web, worker i migrační job.
+
+web:
+  image:
+    repository: harbor.intra.prorocketeers.com/rocketreality/web
+    pullPolicy: IfNotPresent
+    # Default tagu je appVersion chartu.
+    tag: ''
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      memory: 512Mi
+
+worker:
+  image:
+    repository: harbor.intra.prorocketeers.com/rocketreality/worker
+    pullPolicy: IfNotPresent
+    tag: ''
+  # Nechat 1 — cron joby (expirace, watchdog) počítají s jednou replikou.
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      memory: 768Mi
+
+imagePullSecrets: []
+nameOverride: ''
+fullnameOverride: ''
+
+# Kubernetes Secret s runtime tajemstvími (klíče viz hlavička souboru).
+existingSecret: rocketreality-env
+
+# Migrace (drizzle) běží jako helm hook job před install/upgrade
+# z worker image — ta nese celý workspace včetně @rocket/db.
+migrations:
+  enabled: true
+
+envs:
+  APP_URL: https://rocketreality.k8s.prorocketeers.com
+  S3_ENDPOINT: http://minio:9000
+  S3_REGION: us-east-1
+  S3_BUCKET: rocketreality
+  S3_PUBLIC_URL: https://rocketreality.k8s.prorocketeers.com/media
+  SMTP_HOST: mailpit
+  SMTP_PORT: '1025'
+  MAIL_FROM: RocketReality <info@rocketreality.cz>
+  PAYMENTS_PROVIDER: free
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ''
+
+podAnnotations: {}
+podSecurityContext: {}
+securityContext: {}
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  className: ''
+  annotations:
+    kubernetes.io/ingress.class: haproxy
+    kubernetes.io/tls-acme: 'true'
+  hosts:
+    - host: rocketreality.k8s.prorocketeers.com
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls:
+    - secretName: rocketreality-tls
+      hosts:
+        - rocketreality.k8s.prorocketeers.com
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
