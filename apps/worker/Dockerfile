@@ -3,8 +3,10 @@
 #
 # Build z kořene repa: `docker build -f apps/worker/Dockerfile .`
 # Worker běží přes tsx přímo nad TS zdrojáky (stejně jako `pnpm start`),
-# image proto nese celý workspace včetně @rocket/db — díky tomu umí i
-# spustit migrace: `tsx src/migrate.ts` v /app/packages/db (viz helm chart).
+# image proto nese celý workspace včetně @rocket/db. Při startu nejdřív
+# aplikuje drizzle migrace (idempotentní) a teprve pak spustí worker —
+# na platformách bez migračního hooku (Rock8Cloud) tak drží schéma DB
+# aktuální; helm chart je navíc umí pustit i jako samostatný job.
 # Konfigurace se čte za běhu z prostředí, healthcheck: GET :3010/health.
 # ──────────────────────────────────────────────
 FROM node:22-alpine
@@ -32,4 +34,4 @@ ENV NODE_ENV=production
 USER node
 EXPOSE 3010
 WORKDIR /app/apps/worker
-CMD ["node_modules/.bin/tsx", "src/index.ts"]
+CMD ["sh", "-c", "cd /app/packages/db && node_modules/.bin/tsx src/migrate.ts && cd /app/apps/worker && exec node_modules/.bin/tsx src/index.ts"]
