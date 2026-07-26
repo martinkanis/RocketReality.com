@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { authClient } from '@/lib/auth-client'
+import { formString } from '@/lib/form'
 
 export function ForgotPasswordForm() {
   const [isSent, setIsSent] = useState(false)
@@ -16,7 +17,7 @@ export function ForgotPasswordForm() {
     setIsSubmitting(true)
     const formData = new FormData(event.currentTarget)
     await authClient.requestPasswordReset({
-      email: String(formData.get('email')),
+      email: formString(formData, 'email'),
       redirectTo: '/obnova-hesla',
     })
     // Záměrně nerozlišujeme, zda účet existuje (ochrana proti enumeraci účtů).

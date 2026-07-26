@@ -20,7 +20,9 @@ export const moderationCases = pgTable(
     resolvedAt: timestamp({ withTimezone: true }),
   },
   (table) => [
-    index('moderation_cases_queue').on(table.createdAt).where(sql`${table.status} = 'pending'`),
+    index('moderation_cases_queue')
+      .on(table.createdAt)
+      .where(sql`${table.status} = 'pending'`),
     index().on(table.listingId),
   ],
 )

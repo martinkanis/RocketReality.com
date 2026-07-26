@@ -1,5 +1,11 @@
+import { NuqsAdapter } from 'nuqs/adapters/next/app'
 import type { ReactNode } from 'react'
 
+/**
+ * Veřejná část webu. Šířku obsahu si řídí jednotlivé route groups
+ * (úzké informační stránky mají vlastní layout v (informace)/).
+ * NuqsAdapter zpřístupňuje URL query state filtrům výpisu.
+ */
 export default function PublicLayout({ children }: { children: ReactNode }) {
-  return <div className="mx-auto w-full max-w-3xl px-4 py-12">{children}</div>
+  return <NuqsAdapter>{children}</NuqsAdapter>
 }

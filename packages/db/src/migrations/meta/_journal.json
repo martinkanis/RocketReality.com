@@ -22,6 +22,13 @@
       "when": 1785089444358,
       "tag": "0002_price_history_trigger",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1785093073930,
+      "tag": "0003_reward_payouts",
+      "breakpoints": true
     }
   ]
 }

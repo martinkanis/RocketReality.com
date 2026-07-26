@@ -2,6 +2,7 @@ import { createServer } from 'node:http'
 import { loadEnv } from '@rocket/config'
 import { closeDb } from '@rocket/db'
 import { EXPIRE_LISTINGS_CRON, expireListingsJob } from './jobs/expire-listings'
+import { MEDIA_SWEEP_CRON, mediaSweepJob } from './jobs/media-sweep'
 import { processPhotoJob } from './jobs/process-photo'
 import { sendEmailJob } from './jobs/send-email'
 import { WATCHDOG_CRON, watchdogJob } from './jobs/watchdog'
@@ -61,9 +62,11 @@ async function main(): Promise<void> {
   await queue.register(expireListingsJob)
   await queue.register(watchdogJob)
   await queue.register(processPhotoJob)
+  await queue.register(mediaSweepJob)
 
   await queue.schedule(expireListingsJob.name, EXPIRE_LISTINGS_CRON)
   await queue.schedule(watchdogJob.name, WATCHDOG_CRON)
+  await queue.schedule(mediaSweepJob.name, MEDIA_SWEEP_CRON)
 
   const server = createHealthcheckServer()
   server.listen(HEALTHCHECK_PORT, () => {

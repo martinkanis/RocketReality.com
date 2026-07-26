@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { authClient } from '@/lib/auth-client'
+import { formString } from '@/lib/form'
 
 export function RegisterForm() {
   const router = useRouter()
@@ -18,18 +19,18 @@ export function RegisterForm() {
     event.preventDefault()
     setError(null)
     const formData = new FormData(event.currentTarget)
-    const password = String(formData.get('password'))
+    const password = formString(formData, 'password')
     if (password.length < 8) {
       setError('Heslo musí mít alespoň 8 znaků.')
       return
     }
     setIsSubmitting(true)
     const { error: signUpError } = await authClient.signUp.email({
-      name: String(formData.get('name')),
-      email: String(formData.get('email')),
+      name: formString(formData, 'name'),
+      email: formString(formData, 'email'),
       password,
       // Doplňkové pole better-auth (additionalFields) — typ klienta ho nezná.
-      ...({ accountType: String(formData.get('accountType')) } as Record<string, string>),
+      ...({ accountType: formString(formData, 'accountType') } as Record<string, string>),
     })
     setIsSubmitting(false)
     if (signUpError) {

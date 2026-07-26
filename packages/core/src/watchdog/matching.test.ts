@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { searchQuerySchema } from '../search/query'
-import { matchesSavedSearch, parseSavedSearchFilters, type WatchdogListingCandidate } from './matching'
+import {
+  matchesSavedSearch,
+  parseSavedSearchFilters,
+  type WatchdogListingCandidate,
+} from './matching'
 
 const brnoApartment: WatchdogListingCandidate = {
   categoryMainId: 1,
@@ -48,8 +52,6 @@ describe('parseSavedSearchFilters', () => {
   })
 
   it('parsuje validní filtry', () => {
-    expect(
-      parseSavedSearchFilters({ transaction: 'prodej', categoryMain: 'byty' }),
-    ).not.toBeNull()
+    expect(parseSavedSearchFilters({ transaction: 'prodej', categoryMain: 'byty' })).not.toBeNull()
   })
 })

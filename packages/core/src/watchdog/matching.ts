@@ -23,10 +23,7 @@ export function parseSavedSearchFilters(filters: unknown): SearchQuery | null {
  * Vyhodnocení, zda nový inzerát odpovídá uloženému hledání — pro okamžité
  * notifikace hlídacího psa (bez SQL dotazu na každé hledání).
  */
-export function matchesSavedSearch(
-  listing: WatchdogListingCandidate,
-  query: SearchQuery,
-): boolean {
+export function matchesSavedSearch(listing: WatchdogListingCandidate, query: SearchQuery): boolean {
   const categoryMain = CATEGORY_MAIN_BY_SLUG.get(query.categoryMain)
   if (!categoryMain || listing.categoryMainId !== categoryMain.id) return false
   if (listing.transaction !== query.transaction) return false

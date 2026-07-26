@@ -24,7 +24,7 @@ export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
     email: user.email,
     role: user.role ?? 'user',
     accountType: (user as { accountType?: string }).accountType ?? 'soukromnik',
-    isSuperadmin: user.role === 'superadmin',
+    isSuperadmin: user.role === 'admin',
   }
 })
 
