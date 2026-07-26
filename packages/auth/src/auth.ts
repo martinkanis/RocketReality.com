@@ -4,8 +4,14 @@ import { sendPasswordResetEmail, sendVerificationEmail } from '@rocket/emails'
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { admin } from 'better-auth/plugins'
+import { adminAc, userAc } from 'better-auth/plugins/admin/access'
 
 const env = loadEnv()
+
+const portalRoles = {
+  user: userAc,
+  superadmin: adminAc,
+}
 
 /**
  * Serverová better-auth instance. Role portálu: user / superadmin (admin plugin),
@@ -47,7 +53,7 @@ export const auth = betterAuth({
   session: { modelName: 'sessions' },
   account: { modelName: 'accounts' },
   verification: { modelName: 'verifications' },
-  plugins: [admin({ adminRoles: ['superadmin'] })],
+  plugins: [admin({ roles: portalRoles, adminRoles: ['superadmin'] })],
 })
 
 export type AuthSession = typeof auth.$Infer.Session
