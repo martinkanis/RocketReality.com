@@ -4,6 +4,10 @@ import { CATEGORIES_MAIN } from '@rocket/shared'
 import { desc, eq } from 'drizzle-orm'
 import type { MetadataRoute } from 'next'
 
+// Sitemap čte inzeráty z DB — nesmí se prerenderovat při buildu (image se
+// buildí bez databáze), generuje se až za běhu.
+export const dynamic = 'force-dynamic'
+
 const LISTING_LIMIT = 5000
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
