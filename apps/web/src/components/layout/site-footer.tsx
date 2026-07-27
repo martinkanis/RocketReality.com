@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { BrandSymbol } from '@/components/layout/brand-symbol'
 
 const OFFER_LINKS = [
   { href: '/prodej/byty', label: 'Prodej bytů' },
@@ -43,9 +44,12 @@ export function SiteFooter() {
     <footer className="bg-brand-950 text-brand-200">
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:grid-cols-2 lg:grid-cols-3">
         <div>
-          <p className="text-lg font-semibold tracking-wide">
-            <span className="text-gold-400">Rocket</span>
-            <span className="text-white">Reality</span>
+          <p className="flex items-center gap-2 text-lg font-semibold tracking-wide">
+            <BrandSymbol className="size-7" markClassName="fill-brand-50" />
+            <span>
+              <span className="text-gold-400">Rocket</span>
+              <span className="text-white">Reality</span>
+            </span>
           </p>
           <p className="mt-3 max-w-xs text-sm leading-relaxed">
             Český realitní portál s férovými cenami. Soukromá inzerce od 0 Kč, žádné provize

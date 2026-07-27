@@ -4,6 +4,7 @@ import { Menu, X } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
 
+import { BrandSymbol } from '@/components/layout/brand-symbol'
 import { Button } from '@/components/ui/button'
 
 const NAV_ITEMS = [
@@ -16,9 +17,12 @@ const NAV_ITEMS = [
 
 function Logo() {
   return (
-    <Link href="/" className="text-xl font-semibold tracking-wide">
-      <span className="text-gold-400">Rocket</span>
-      <span className="text-brand-700">Reality</span>
+    <Link href="/" className="flex items-center gap-2 text-xl font-semibold tracking-wide">
+      <BrandSymbol className="size-8" />
+      <span>
+        <span className="text-gold-400">Rocket</span>
+        <span className="text-brand-700">Reality</span>
+      </span>
     </Link>
   )
 }
