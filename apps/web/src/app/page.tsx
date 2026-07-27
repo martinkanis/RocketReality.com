@@ -1,3 +1,4 @@
+import { REWARD_QR_AMOUNT_CZK } from '@rocket/config'
 import { CATEGORIES_MAIN } from '@rocket/shared'
 import {
   BadgePercent,
@@ -38,9 +39,8 @@ const BENEFITS = [
   },
   {
     icon: HandCoins,
-    title: 'Bez provizí platformě',
-    description:
-      'Žádná procenta z prodeje ani skryté poplatky. Platíte jen za služby, které si sami vyberete.',
+    title: 'Platíme my vám',
+    description: `Žádná procenta z prodeje ani skryté poplatky. Za schválený inzerát s platebním QR kódem ve fotkách vám naopak pošleme ${REWARD_QR_AMOUNT_CZK} Kč.`,
   },
   {
     icon: Sparkles,
@@ -129,8 +129,8 @@ export default function HomePage() {
           Nemovitosti bez přemrštěných cen
         </h1>
         <p className="mx-auto mt-4 max-w-2xl text-base text-brand-100 sm:text-lg">
-          Prodávejte, pronajímejte i hledejte nový domov na portálu, kde soukromá inzerce začíná na
-          0 Kč.
+          Inzertní server, kde neplatíte vy nám — platíme my vám. Soukromá inzerce začíná na 0 Kč a
+          za inzerát s platebním QR kódem vyplácíme odměnu.
         </p>
       </section>
       <div className="mx-auto -mt-16 w-full max-w-4xl px-4">
