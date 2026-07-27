@@ -15,12 +15,17 @@ import Link from 'next/link'
 
 import { ListingCard } from '@/components/listing/listing-card'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { getFavoriteListingItems } from '@/features/favorites/favorite-listing-items'
+import { getActiveCategoryCounts } from '@/features/search/category-counts'
 import { getLatestListings } from '@/features/search/latest-listings'
 import { HomeSearchPanel } from '@/features/search/home-search-panel'
+import { NearbyListings } from '@/features/search/nearby-listings'
+import { getSessionUser } from '@/lib/session'
 
 export const dynamic = 'force-dynamic'
 
-const LATEST_LISTINGS_COUNT = 8
+const SECTION_LISTINGS_COUNT = 8
 
 const CATEGORY_ICONS: Record<string, LucideIcon> = {
   byty: Building2,
@@ -50,30 +55,15 @@ const BENEFITS = [
   },
 ] as const
 
-async function LatestListings() {
-  const items = await getLatestListings(LATEST_LISTINGS_COUNT)
-  if (items.length === 0) return null
-  return (
-    <section className="mx-auto w-full max-w-6xl px-4 py-16">
-      <div className="flex items-center justify-between gap-4">
-        <h2 className="text-2xl font-semibold">Nejnovější nabídky</h2>
-        <Link
-          href="/prodej/byty"
-          className="text-sm font-medium text-brand-500 transition-colors hover:text-primary"
-        >
-          Zobrazit vše
-        </Link>
-      </div>
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {items.map((item) => (
-          <ListingCard key={item.id} item={item} />
-        ))}
-      </div>
-    </section>
-  )
+/** České skloňování počtu nabídek: 1 nabídka, 3 nabídky, 12 nabídek. */
+function formatOfferCount(count: number): string {
+  if (count === 1) return '1 nabídka'
+  if (count >= 2 && count <= 4) return `${count} nabídky`
+  return `${count.toLocaleString('cs-CZ')} nabídek`
 }
 
-function CategoryTiles() {
+async function CategoryTiles() {
+  const counts = await getActiveCategoryCounts()
   return (
     <section className="mx-auto w-full max-w-6xl px-4 pt-16">
       <h2 className="text-2xl font-semibold">Prohlédněte si nabídku</h2>
@@ -90,10 +80,91 @@ function CategoryTiles() {
                 <Icon className="size-6" />
               </span>
               <span className="text-sm font-medium text-heading">{category.name}</span>
+              <span className="text-xs text-muted-foreground">
+                {formatOfferCount(counts.get(category.id) ?? 0)}
+              </span>
             </Link>
           )
         })}
       </div>
+    </section>
+  )
+}
+
+async function ListingsForYou() {
+  const user = await getSessionUser()
+  const [latest, saved] = await Promise.all([
+    getLatestListings(SECTION_LISTINGS_COUNT),
+    user ? getFavoriteListingItems(user.id, SECTION_LISTINGS_COUNT) : Promise.resolve([]),
+  ])
+
+  return (
+    <section className="mx-auto w-full max-w-6xl px-4 py-16">
+      <h2 className="text-2xl font-semibold">Nemovitosti pro vás</h2>
+      <Tabs defaultValue="doporucene" className="mt-6">
+        <TabsList>
+          <TabsTrigger value="doporucene">Doporučené pro vás</TabsTrigger>
+          <TabsTrigger value="ulozene">Moje uložené</TabsTrigger>
+          <TabsTrigger value="okoli">V okolí</TabsTrigger>
+        </TabsList>
+        <TabsContent value="doporucene" className="mt-6">
+          {latest.length === 0 ? (
+            <p className="py-8 text-center text-sm text-muted-foreground">
+              Zatím tu žádné nabídky nejsou — buďte první, kdo inzerát vloží.
+            </p>
+          ) : (
+            <>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {latest.map((item) => (
+                  <ListingCard key={item.id} item={item} />
+                ))}
+              </div>
+              <div className="mt-6 text-center">
+                <Link
+                  href="/prodej/byty"
+                  className="text-sm font-medium text-brand-500 transition-colors hover:text-primary"
+                >
+                  Zobrazit další nabídky
+                </Link>
+              </div>
+            </>
+          )}
+        </TabsContent>
+        <TabsContent value="ulozene" className="mt-6">
+          {!user ? (
+            <p className="py-8 text-center text-sm text-muted-foreground">
+              Uložené nabídky uvidíte po{' '}
+              <Link href="/prihlaseni" className="text-brand-500 hover:text-primary">
+                přihlášení
+              </Link>
+              .
+            </p>
+          ) : saved.length === 0 ? (
+            <p className="py-8 text-center text-sm text-muted-foreground">
+              Zatím nemáte žádné uložené nabídky — srdíčkem u inzerátu si je sem přidáte.
+            </p>
+          ) : (
+            <>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {saved.map((item) => (
+                  <ListingCard key={item.id} item={item} isFavorite />
+                ))}
+              </div>
+              <div className="mt-6 text-center">
+                <Link
+                  href="/muj-ucet/oblibene"
+                  className="text-sm font-medium text-brand-500 transition-colors hover:text-primary"
+                >
+                  Všechny uložené nabídky
+                </Link>
+              </div>
+            </>
+          )}
+        </TabsContent>
+        <TabsContent value="okoli" className="mt-6">
+          <NearbyListings />
+        </TabsContent>
+      </Tabs>
     </section>
   )
 }
@@ -137,7 +208,7 @@ export default function HomePage() {
         <HomeSearchPanel />
       </div>
       <CategoryTiles />
-      <LatestListings />
+      <ListingsForYou />
       <Benefits />
     </>
   )
