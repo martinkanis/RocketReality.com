@@ -13,6 +13,7 @@ const COMPANY_LINKS = [
   { href: '/podminky', label: 'Podmínky užití' },
   { href: '/ochrana-osobnich-udaju', label: 'Ochrana osobních údajů' },
   { href: '/napoveda', label: 'Nápověda' },
+  { href: '/api-dokumentace', label: 'API pro import inzerátů' },
 ] as const
 
 interface FooterColumnProps {
