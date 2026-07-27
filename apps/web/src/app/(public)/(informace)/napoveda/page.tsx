@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Nápověda',
-  description: 'Odpovědi na nejčastější otázky k inzerci na RocketReality.cz.',
+  description: 'Odpovědi na nejčastější otázky k inzerci na RocketNemovitosti.cz.',
 }
 
 const FAQ_ITEMS = [

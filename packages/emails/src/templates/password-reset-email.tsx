@@ -16,12 +16,12 @@ export interface PasswordResetEmailProps {
 export function PasswordResetEmail({ userName, resetUrl }: PasswordResetEmailProps) {
   return (
     <EmailLayout
-      preview="Nastavte si nové heslo ke svému účtu RocketReality."
+      preview="Nastavte si nové heslo ke svému účtu Rocket Nemovitosti."
       heading="Obnovení hesla"
     >
       <Text style={paragraphStyle}>Dobrý den, {userName},</Text>
       <Text style={paragraphStyle}>
-        obdrželi jsme žádost o obnovení hesla k vašemu účtu na RocketReality. Nové heslo si
+        obdrželi jsme žádost o obnovení hesla k vašemu účtu na Rocket Nemovitosti. Nové heslo si
         nastavíte kliknutím na tlačítko níže.
       </Text>
       <Section style={buttonSectionStyle}>

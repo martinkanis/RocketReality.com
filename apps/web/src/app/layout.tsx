@@ -15,8 +15,8 @@ const poppins = Poppins({
 
 export const metadata: Metadata = {
   title: {
-    template: '%s | RocketReality',
-    default: 'RocketReality — reality bez přemrštěných cen',
+    template: '%s | Rocket Nemovitosti',
+    default: 'Rocket Nemovitosti — reality bez přemrštěných cen',
   },
   description:
     'Prodej a pronájem bytů, domů i pozemků v celé ČR. Soukromá inzerce od 0 Kč, žádné provize platformě.',

@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Ochrana osobních údajů',
-  description: 'Informace o zpracování osobních údajů na portálu RocketReality.cz (GDPR).',
+  description: 'Informace o zpracování osobních údajů na portálu RocketNemovitosti.cz (GDPR).',
 }
 
 export default function OchranaOsobnichUdajuPage() {
@@ -10,7 +10,7 @@ export default function OchranaOsobnichUdajuPage() {
     <article>
       <h1 className="text-3xl font-semibold">Ochrana osobních údajů</h1>
       <p className="mt-4 leading-relaxed">
-        Správcem osobních údajů je RocketReality s.r.o. Osobní údaje zpracováváme v souladu s
+        Správcem osobních údajů je Rocket Nemovitosti s.r.o. Osobní údaje zpracováváme v souladu s
         nařízením GDPR a zákonem o zpracování osobních údajů.
       </p>
       <section className="mt-8">

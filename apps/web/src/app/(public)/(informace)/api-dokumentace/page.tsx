@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'API pro import inzerátů',
   description:
-    'Dokumentace rozhraní pro automatické vkládání a aktualizaci inzerátů na RocketReality z realitního softwaru.',
+    'Dokumentace rozhraní pro automatické vkládání a aktualizaci inzerátů na Rocket Nemovitosti z realitního softwaru.',
 }
 
 const API_BASE_URL = 'https://rocketnemovitosti.cz'
@@ -143,7 +143,7 @@ export default function ApiDokumentacePage() {
       <h1 className="text-3xl font-semibold">API pro import inzerátů</h1>
       <p className="mt-4 leading-relaxed">
         Rozhraní pro realitní kanceláře a výrobce realitního softwaru, kteří chtějí inzeráty na
-        RocketReality vkládat a aktualizovat automaticky. Import funguje jako jednoduché REST API —
+        Rocket Nemovitosti vkládat a aktualizovat automaticky. Import funguje jako jednoduché REST API —
         jeden HTTP požadavek na inzerát, formát JSON.
       </p>
 

@@ -48,7 +48,7 @@ export function SiteFooter() {
             <BrandSymbol className="size-7" markClassName="fill-brand-50" />
             <span>
               <span className="text-gold-400">Rocket</span>
-              <span className="text-white">Reality</span>
+              <span className="text-white">Nemovitosti</span>
             </span>
           </p>
           <p className="mt-3 max-w-xs text-sm leading-relaxed">
@@ -60,7 +60,7 @@ export function SiteFooter() {
         <FooterColumn title="Společnost" links={COMPANY_LINKS} />
       </div>
       <div className="border-t border-brand-800">
-        <p className="mx-auto max-w-6xl px-4 py-5 text-sm">© 2026 RocketReality.cz</p>
+        <p className="mx-auto max-w-6xl px-4 py-5 text-sm">© 2026 RocketNemovitosti.cz</p>
       </div>
     </footer>
   )

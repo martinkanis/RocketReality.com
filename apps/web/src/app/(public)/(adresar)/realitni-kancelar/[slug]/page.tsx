@@ -48,7 +48,7 @@ export async function generateMetadata({ params }: AgencyProfilePageProps): Prom
     title: `${agency.name} — realitní kancelář`,
     description:
       agency.description ??
-      `Profil realitní kanceláře ${agency.name} na RocketReality — makléři a aktuální nabídka nemovitostí.`,
+      `Profil realitní kanceláře ${agency.name} na Rocket Nemovitosti — makléři a aktuální nabídka nemovitostí.`,
   }
 }
 

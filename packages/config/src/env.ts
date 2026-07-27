@@ -13,7 +13,7 @@ const envSchema = z.object({
   SMTP_PORT: z.coerce.number().int().default(1025),
   SMTP_USER: z.string().optional(),
   SMTP_PASSWORD: z.string().optional(),
-  MAIL_FROM: z.string().default('RocketReality <info@rocketreality.cz>'),
+  MAIL_FROM: z.string().default('Rocket Nemovitosti <info@rocketreality.cz>'),
 
   S3_ENDPOINT: z.url().default('http://localhost:9100'),
   S3_REGION: z.string().default('us-east-1'),

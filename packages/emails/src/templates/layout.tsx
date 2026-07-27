@@ -1,7 +1,7 @@
 import { Body, Container, Head, Heading, Hr, Html, Preview, Text } from '@react-email/components'
 import type { CSSProperties, ReactNode } from 'react'
 
-/** Barvy jednotného vizuálu RocketReality. */
+/** Barvy jednotného vizuálu Rocket Nemovitosti. */
 export const emailColors = {
   emerald: '#1a433e',
   gold: '#cfb17b',
@@ -103,7 +103,7 @@ interface EmailLayoutProps {
   children: ReactNode
 }
 
-/** Společná kostra všech e-mailů — hlavička, nadpis a patička RocketReality. */
+/** Společná kostra všech e-mailů — hlavička, nadpis a patička Rocket Nemovitosti. */
 export function EmailLayout({ preview, heading, children }: EmailLayoutProps) {
   return (
     <Html lang="cs">
@@ -111,14 +111,14 @@ export function EmailLayout({ preview, heading, children }: EmailLayoutProps) {
       <Preview>{preview}</Preview>
       <Body style={bodyStyle}>
         <Container style={containerStyle}>
-          <Text style={brandStyle}>RocketReality</Text>
+          <Text style={brandStyle}>Rocket Nemovitosti</Text>
           <Heading as="h1" style={headingStyle}>
             {heading}
           </Heading>
           {children}
           <Hr style={footerHrStyle} />
           <Text style={footerStyle}>
-            © {new Date().getFullYear()} RocketReality — český realitní portál
+            © {new Date().getFullYear()} Rocket Nemovitosti — český realitní portál
             <br />
             Tento e-mail byl odeslán automaticky, neodpovídejte na něj prosím.
           </Text>

@@ -177,7 +177,7 @@ function Benefits() {
   return (
     <section className="bg-surface py-16">
       <div className="mx-auto w-full max-w-6xl px-4">
-        <h2 className="text-2xl font-semibold">Proč RocketReality</h2>
+        <h2 className="text-2xl font-semibold">Proč Rocket Nemovitosti</h2>
         <div className="mt-6 grid gap-4 md:grid-cols-3">
           {BENEFITS.map((benefit) => (
             <Card key={benefit.title}>

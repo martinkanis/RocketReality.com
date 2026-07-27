@@ -21,7 +21,7 @@ export function VerificationEmail({ userName, verifyUrl }: VerificationEmailProp
     >
       <Text style={paragraphStyle}>Dobrý den, {userName},</Text>
       <Text style={paragraphStyle}>
-        děkujeme za registraci na RocketReality. Pro dokončení registrace prosím potvrďte svou
+        děkujeme za registraci na Rocket Nemovitosti. Pro dokončení registrace prosím potvrďte svou
         e-mailovou adresu kliknutím na tlačítko níže.
       </Text>
       <Section style={buttonSectionStyle}>

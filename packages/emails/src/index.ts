@@ -35,7 +35,7 @@ export interface SendPasswordResetEmailParams extends PasswordResetEmailProps {
 export async function sendPasswordResetEmail(params: SendPasswordResetEmailParams): Promise<void> {
   const { to, ...props } = params
   const { html, text } = await renderTemplate(PasswordResetEmail(props))
-  await sendMail({ to, subject: 'Obnovení hesla k účtu RocketReality', html, text })
+  await sendMail({ to, subject: 'Obnovení hesla k účtu Rocket Nemovitosti', html, text })
 }
 
 export interface SendWatchdogDigestParams extends WatchdogDigestEmailProps {

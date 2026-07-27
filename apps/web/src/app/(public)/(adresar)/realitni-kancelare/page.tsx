@@ -11,7 +11,7 @@ export function generateMetadata(): Metadata {
   return {
     title: 'Realitní kanceláře',
     description:
-      'Adresář realitních kanceláří na RocketReality — profily, hodnocení a aktuální nabídka nemovitostí.',
+      'Adresář realitních kanceláří na Rocket Nemovitosti — profily, hodnocení a aktuální nabídka nemovitostí.',
   }
 }
 
@@ -64,7 +64,7 @@ export default async function AgencyDirectoryPage({ searchParams }: AgencyDirect
     <div>
       <h1 className="text-3xl font-semibold">Realitní kanceláře</h1>
       <p className="mt-4 leading-relaxed">
-        Profily realitních kanceláří inzerujících na RocketReality — s hodnocením klientů a aktuální
+        Profily realitních kanceláří inzerujících na Rocket Nemovitosti — s hodnocením klientů a aktuální
         nabídkou nemovitostí.
       </p>
 

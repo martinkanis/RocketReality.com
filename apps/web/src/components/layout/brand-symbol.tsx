@@ -1,5 +1,5 @@
 /**
- * Symbol RocketReality — kolečko s raketkou převzaté ze značky ProRocketeers,
+ * Symbol Rocket Nemovitosti — kolečko s raketkou převzaté ze značky ProRocketeers,
  * v barvách ProLife (emerald + gold). Barvu kolečka řídí markClassName,
  * letové linie jsou vždy zlaté.
  */

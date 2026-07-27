@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Podmínky užití',
-  description: 'Podmínky užití realitního portálu RocketReality.cz.',
+  description: 'Podmínky užití realitního portálu RocketNemovitosti.cz.',
 }
 
 export default function PodminkyPage() {
@@ -10,7 +10,7 @@ export default function PodminkyPage() {
     <article>
       <h1 className="text-3xl font-semibold">Podmínky užití</h1>
       <p className="mt-4 leading-relaxed">
-        Tyto podmínky upravují používání realitního portálu RocketReality.cz. Vytvořením účtu nebo
+        Tyto podmínky upravují používání realitního portálu RocketNemovitosti.cz. Vytvořením účtu nebo
         vložením inzerátu s nimi vyjadřujete souhlas.
       </p>
       <section className="mt-8">

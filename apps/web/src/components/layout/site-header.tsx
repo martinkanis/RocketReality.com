@@ -21,7 +21,7 @@ function Logo() {
       <BrandSymbol className="size-8" />
       <span>
         <span className="text-gold-400">Rocket</span>
-        <span className="text-brand-700">Reality</span>
+        <span className="text-brand-700">Nemovitosti</span>
       </span>
     </Link>
   )

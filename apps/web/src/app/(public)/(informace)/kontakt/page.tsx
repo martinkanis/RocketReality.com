@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Kontakt',
-  description: 'Kontaktní údaje portálu RocketReality.cz — podpora, obchod a provozovatel.',
+  description: 'Kontaktní údaje portálu RocketNemovitosti.cz — podpora, obchod a provozovatel.',
 }
 
 export default function KontaktPage() {
@@ -23,14 +23,14 @@ export default function KontaktPage() {
       <section className="mt-8">
         <h2 className="text-xl font-semibold">Spolupráce pro realitní kanceláře</h2>
         <p className="mt-3 leading-relaxed">
-          Chcete na RocketReality inzerovat celé portfolio? Napište nám na obchod@rocketreality.cz a
+          Chcete na Rocket Nemovitosti inzerovat celé portfolio? Napište nám na obchod@rocketreality.cz a
           připravíme vám nabídku na míru.
         </p>
       </section>
       <section className="mt-8">
         <h2 className="text-xl font-semibold">Provozovatel</h2>
         <p className="mt-3 leading-relaxed">
-          RocketReality s.r.o.
+          Rocket Nemovitosti s.r.o.
           <br />
           Náměstí Svatopluka Čecha 516/3, 702 00 Ostrava-Přívoz
           <br />

@@ -46,7 +46,7 @@ export default async function AdminRewardsPage() {
         buildSpayd({
           iban: row.iban,
           amountCzk: row.amountCzk,
-          message: 'Odmena RocketReality',
+          message: 'Odmena Rocket Nemovitosti',
         }),
         { width: 240, margin: 1 },
       ),

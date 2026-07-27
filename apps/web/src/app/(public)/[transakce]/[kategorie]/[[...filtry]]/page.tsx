@@ -65,8 +65,8 @@ export async function generateMetadata({ params }: ListingSearchPageProps): Prom
     locationName: context.location?.name,
   })
   return {
-    title: { absolute: `${heading} — RocketReality` },
-    description: `${heading} — aktuální nabídka nemovitostí s chytrými filtry. Soukromá inzerce od 0 Kč na RocketReality.`,
+    title: { absolute: `${heading} — Rocket Nemovitosti` },
+    description: `${heading} — aktuální nabídka nemovitostí s chytrými filtry. Soukromá inzerce od 0 Kč na Rocket Nemovitosti.`,
     alternates: {
       canonical: buildSearchPath({
         transaction: context.transaction,
