@@ -44,7 +44,7 @@ export default async function AdminAgenciesPage() {
             {rows.map((row) => (
               <tr key={row.id} className="border-b border-border last:border-0">
                 <td className="px-4 py-3">
-                  <Link href={`/realitni-kancelar/${row.slug}`} className="hover:text-primary">
+                  <Link href={`/admin/kancelare/${row.id}`} className="hover:text-primary">
                     {row.name}
                   </Link>
                 </td>
