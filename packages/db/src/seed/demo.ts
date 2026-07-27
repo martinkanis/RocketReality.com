@@ -41,7 +41,7 @@ interface DemoUser {
   email: string
   name: string
   accountType: 'soukromnik' | 'profesional'
-  role: 'user' | 'superadmin'
+  role: 'user' | 'admin'
 }
 
 const DEMO_USERS: readonly DemoUser[] = [
@@ -50,7 +50,7 @@ const DEMO_USERS: readonly DemoUser[] = [
     email: 'admin@rocketreality.cz',
     name: 'Správce Portálu',
     accountType: 'profesional',
-    role: 'superadmin',
+    role: 'admin',
   },
   {
     id: 'user-jana',
@@ -281,10 +281,10 @@ async function seedListings(db: Database, agencyIds: string[]): Promise<void> {
   for (const municipality of municipalityRows as MunicipalityRow[]) {
     for (let i = 0; i < 3; i++) {
       const roll = rng()
-      const categoryMainId = roll < 0.5 ? 1 : roll < 0.75 ? 2 : roll < 0.85 ? 3 : roll < 0.95 ? 4 : 5
+      const categoryMainId =
+        roll < 0.5 ? 1 : roll < 0.75 ? 2 : roll < 0.85 ? 3 : roll < 0.95 ? 4 : 5
       const transaction: TransactionType = rng() < 0.7 ? 'prodej' : 'pronajem'
-      const disposition =
-        categoryMainId === CATEGORY_BYTY_ID ? pick(APARTMENT_DISPOSITIONS) : null
+      const disposition = categoryMainId === CATEGORY_BYTY_ID ? pick(APARTMENT_DISPOSITIONS) : null
       const categorySubId =
         categoryMainId === 2
           ? 201
@@ -297,11 +297,8 @@ async function seedListings(db: Database, agencyIds: string[]): Promise<void> {
                 : null
 
       const area =
-        categoryMainId === 3
-          ? Math.round(400 + rng() * 2000)
-          : Math.round(30 + rng() * 150)
-      const pricePerM2 =
-        transaction === 'prodej' ? 40_000 + rng() * 80_000 : 150 + rng() * 250
+        categoryMainId === 3 ? Math.round(400 + rng() * 2000) : Math.round(30 + rng() * 150)
+      const pricePerM2 = transaction === 'prodej' ? 40_000 + rng() * 80_000 : 150 + rng() * 250
       const priceAmount = Math.round((area * pricePerM2) / 1000) * 1000
 
       const typeName =
@@ -368,8 +365,16 @@ async function seedListings(db: Database, agencyIds: string[]): Promise<void> {
           floorsTotal: categoryMainId === 1 ? 8 : categoryMainId === 2 ? 2 : null,
           ownership: rng() < 0.85 ? 'osobni' : 'druzstevni',
           buildingType: categoryMainId === 3 ? null : rng() < 0.6 ? 'cihlova' : 'panelova',
-          buildingCondition: pick(['novostavba', 'velmi_dobry', 'dobry', 'po_rekonstrukci'] as const),
-          furnishing: transaction === 'pronajem' ? pick(['zarizeno', 'castecne_zarizeno', 'nezarizeno'] as const) : null,
+          buildingCondition: pick([
+            'novostavba',
+            'velmi_dobry',
+            'dobry',
+            'po_rekonstrukci',
+          ] as const),
+          furnishing:
+            transaction === 'pronajem'
+              ? pick(['zarizeno', 'castecne_zarizeno', 'nezarizeno'] as const)
+              : null,
           energyLabel: pick(['B', 'C', 'C', 'D', 'D', 'E', 'G'] as const),
           hasBalcony: categoryMainId === 1 && rng() < 0.5,
           hasCellar: rng() < 0.4,
@@ -378,7 +383,12 @@ async function seedListings(db: Database, agencyIds: string[]): Promise<void> {
           hasGarage: categoryMainId === 2 && rng() < 0.5,
           attributes:
             categoryMainId === 3
-              ? { elektrina: rng() < 0.8, voda: rng() < 0.6, plyn: rng() < 0.4, kanalizace: rng() < 0.5 }
+              ? {
+                  elektrina: rng() < 0.8,
+                  voda: rng() < 0.6,
+                  plyn: rng() < 0.4,
+                  kanalizace: rng() < 0.5,
+                }
               : {},
           kraj: municipality.kraj,
           districtId: municipality.districtId,

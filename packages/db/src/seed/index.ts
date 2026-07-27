@@ -14,7 +14,9 @@ async function main() {
 
 main()
   .catch((error: unknown) => {
-    process.stderr.write(`Seed selhal: ${error instanceof Error ? error.stack ?? error.message : String(error)}\n`)
+    process.stderr.write(
+      `Seed selhal: ${error instanceof Error ? (error.stack ?? error.message) : String(error)}\n`,
+    )
     process.exitCode = 1
   })
   .finally(() => closeDb())

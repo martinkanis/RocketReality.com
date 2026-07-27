@@ -8,9 +8,7 @@ export interface CheckoutRequest {
 }
 
 export type CheckoutResult =
-  | { status: 'paid' }
-  | { status: 'redirect'; url: string }
-  | { status: 'failed'; errorCode: string }
+  { status: 'paid' } | { status: 'redirect'; url: string } | { status: 'failed'; errorCode: string }
 
 /**
  * Port platební brány. V1 NullPaymentProvider (vše zdarma → okamžitě zaplaceno),

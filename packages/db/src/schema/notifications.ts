@@ -25,6 +25,8 @@ export const notifications = pgTable(
   },
   (table) => [
     index().on(table.userId, table.createdAt),
-    index('notifications_pending').on(table.createdAt).where(sql`${table.status} = 'queued'`),
+    index('notifications_pending')
+      .on(table.createdAt)
+      .where(sql`${table.status} = 'queued'`),
   ],
 )

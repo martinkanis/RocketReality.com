@@ -17,10 +17,20 @@ export const baseConfig = tseslint.config(
       'no-console': 'error',
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
-      '@typescript-eslint/no-misused-promises': ['error', { checksVoidReturn: { attributes: false } }],
+      '@typescript-eslint/no-misused-promises': [
+        'error',
+        { checksVoidReturn: { attributes: false } },
+      ],
     },
   },
   {
-    ignores: ['dist/**', '.next/**', 'node_modules/**'],
+    ignores: [
+      'dist/**',
+      '.next/**',
+      'node_modules/**',
+      '**/*.config.mjs',
+      '**/*.config.ts',
+      'next-env.d.ts',
+    ],
   },
 )

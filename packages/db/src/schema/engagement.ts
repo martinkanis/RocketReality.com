@@ -31,7 +31,10 @@ export const favorites = pgTable(
     priceAtSave: text(),
     createdAt: createdAt(),
   },
-  (table) => [primaryKey({ columns: [table.userId, table.listingId] }), index().on(table.listingId)],
+  (table) => [
+    primaryKey({ columns: [table.userId, table.listingId] }),
+    index().on(table.listingId),
+  ],
 )
 
 /** Uložené hledání = hlídací pes. Filters ve stejném tvaru jako SearchQuery DTO. */

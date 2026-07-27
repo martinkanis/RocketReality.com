@@ -3,7 +3,11 @@ import { getDb, orderItems, orders, payments, products } from '@rocket/db'
 import type { OrderItemType } from '@rocket/shared'
 import { eq } from 'drizzle-orm'
 import { v7 as uuidv7 } from 'uuid'
-import { NullPaymentProvider, type CheckoutResult, type PaymentProviderPort } from './payment-provider'
+import {
+  NullPaymentProvider,
+  type CheckoutResult,
+  type PaymentProviderPort,
+} from './payment-provider'
 
 export class ProductNotFoundError extends Error {
   constructor(code: string) {
@@ -21,7 +25,9 @@ function resolveProvider(): PaymentProviderPort {
   const env = loadEnv()
   if (env.PAYMENTS_PROVIDER === 'stripe') {
     // Stripe provider se doplní při zapnutí monetizace (V3) — do té doby je to chyba konfigurace.
-    throw new Error('StripePaymentProvider zatím není implementován — nastav PAYMENTS_PROVIDER=free')
+    throw new Error(
+      'StripePaymentProvider zatím není implementován — nastav PAYMENTS_PROVIDER=free',
+    )
   }
   return new NullPaymentProvider()
 }
@@ -95,7 +101,11 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
       orderId: order.id,
       provider: provider.name,
       status:
-        checkout.status === 'paid' ? 'succeeded' : checkout.status === 'failed' ? 'failed' : 'pending',
+        checkout.status === 'paid'
+          ? 'succeeded'
+          : checkout.status === 'failed'
+            ? 'failed'
+            : 'pending',
       amount: product.price,
       currency: product.currency,
       idempotencyKey: uuidv7(),

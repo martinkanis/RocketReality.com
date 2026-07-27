@@ -18,7 +18,9 @@ export async function seedCatalogs(db: Database): Promise<void> {
 
   await db
     .insert(categoriesSub)
-    .values(CATEGORIES_SUB.map(({ id, mainId, slug, name, sort }) => ({ id, mainId, slug, name, sort })))
+    .values(
+      CATEGORIES_SUB.map(({ id, mainId, slug, name, sort }) => ({ id, mainId, slug, name, sort })),
+    )
     .onConflictDoUpdate({
       target: categoriesSub.id,
       set: { slug: sql`excluded.slug`, name: sql`excluded.name`, sort: sql`excluded.sort` },

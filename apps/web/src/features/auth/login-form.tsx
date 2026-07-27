@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { authClient } from '@/lib/auth-client'
+import { formString } from '@/lib/form'
 
 export function LoginForm() {
   const router = useRouter()
@@ -20,8 +21,8 @@ export function LoginForm() {
     setIsSubmitting(true)
     const formData = new FormData(event.currentTarget)
     const { error: signInError } = await authClient.signIn.email({
-      email: String(formData.get('email')),
-      password: String(formData.get('password')),
+      email: formString(formData, 'email'),
+      password: formString(formData, 'password'),
     })
     setIsSubmitting(false)
     if (signInError) {

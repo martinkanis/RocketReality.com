@@ -8,10 +8,7 @@ import {
   ListingExpiringEmail,
   type ListingExpiringEmailProps,
 } from './templates/listing-expiring-email'
-import {
-  PasswordResetEmail,
-  type PasswordResetEmailProps,
-} from './templates/password-reset-email'
+import { PasswordResetEmail, type PasswordResetEmailProps } from './templates/password-reset-email'
 import { VerificationEmail, type VerificationEmailProps } from './templates/verification-email'
 import {
   WatchdogDigestEmail,

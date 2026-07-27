@@ -15,7 +15,8 @@ export const nextConfig = [
           patterns: [
             {
               group: ['@/app/*'],
-              message: 'features/ a components/ nesmí importovat z app/ — routing je nejvyšší vrstva.',
+              message:
+                'features/ a components/ nesmí importovat z app/ — routing je nejvyšší vrstva.',
             },
           ],
         },

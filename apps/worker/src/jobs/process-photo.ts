@@ -5,6 +5,7 @@ import { loadEnv } from '@rocket/config'
 import { getDb, listingMedia } from '@rocket/db'
 import { createLogger } from '../logger'
 import { defineJob } from './define-job'
+import { detectPaymentQr } from './detect-payment-qr'
 
 export interface ProcessPhotoPayload {
   mediaId: string
@@ -81,39 +82,45 @@ async function createVariant(
   return variantKey
 }
 
-/** Zpracování nahrané fotky inzerátu: stáhne originál a vytvoří webp deriváty. */
+/** Zpracuje jednu fotku: stáhne originál, vytvoří webp deriváty a označí ji jako ready. */
+export async function processMedia(mediaId: string): Promise<void> {
+  const db = getDb()
+  const [media] = await db.select().from(listingMedia).where(eq(listingMedia.id, mediaId)).limit(1)
+  if (!media) {
+    throw new Error(`Záznam listing_media ${mediaId} neexistuje`)
+  }
+
+  const original = await downloadOriginal(media.storageKey)
+  const metadata = await sharp(original).metadata()
+
+  const variants = {
+    thumb: await createVariant(media.storageKey, original, 'thumb'),
+    card: await createVariant(media.storageKey, original, 'card'),
+    detail: await createVariant(media.storageKey, original, 'detail'),
+  }
+
+  await db
+    .update(listingMedia)
+    .set({
+      variants,
+      width: metadata.width ?? null,
+      height: metadata.height ?? null,
+      isReady: true,
+    })
+    .where(eq(listingMedia.id, mediaId))
+
+  // Detekce platebního QR nesmí shodit zpracování fotky — je to bonus, ne podmínka.
+  try {
+    await detectPaymentQr(media, original)
+  } catch (error) {
+    logger.error({ err: error, mediaId }, 'Detekce platebního QR selhala')
+  }
+
+  logger.info({ mediaId, variants }, 'Deriváty fotky vytvořeny')
+}
+
+/** Zpracování nahrané fotky inzerátu (adresný job dle mediaId). */
 export const processPhotoJob = defineJob<ProcessPhotoPayload>({
   name: 'media.process',
-  handler: async ({ mediaId }) => {
-    const db = getDb()
-    const [media] = await db
-      .select()
-      .from(listingMedia)
-      .where(eq(listingMedia.id, mediaId))
-      .limit(1)
-    if (!media) {
-      throw new Error(`Záznam listing_media ${mediaId} neexistuje`)
-    }
-
-    const original = await downloadOriginal(media.storageKey)
-    const metadata = await sharp(original).metadata()
-
-    const variants = {
-      thumb: await createVariant(media.storageKey, original, 'thumb'),
-      card: await createVariant(media.storageKey, original, 'card'),
-      detail: await createVariant(media.storageKey, original, 'detail'),
-    }
-
-    await db
-      .update(listingMedia)
-      .set({
-        variants,
-        width: metadata.width ?? null,
-        height: metadata.height ?? null,
-        isReady: true,
-      })
-      .where(eq(listingMedia.id, mediaId))
-
-    logger.info({ mediaId, variants }, 'Deriváty fotky vytvořeny')
-  },
+  handler: ({ mediaId }) => processMedia(mediaId),
 })

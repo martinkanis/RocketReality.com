@@ -5,7 +5,6 @@ import {
   HandCoins,
   House,
   LandPlot,
-  Search,
   Sparkles,
   Store,
   Warehouse,
@@ -13,17 +12,14 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ListingCard } from '@/components/listing/listing-card'
+import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { getLatestListings } from '@/features/search/latest-listings'
+import { HomeSearchPanel } from '@/features/search/home-search-panel'
+
+export const dynamic = 'force-dynamic'
+
+const LATEST_LISTINGS_COUNT = 8
 
 const CATEGORY_ICONS: Record<string, LucideIcon> = {
   byty: Building2,
@@ -54,49 +50,32 @@ const BENEFITS = [
   },
 ] as const
 
-function SearchPanel() {
+async function LatestListings() {
+  const items = await getLatestListings(LATEST_LISTINGS_COUNT)
+  if (items.length === 0) return null
   return (
-    <Card className="shadow-soft">
-      <CardContent className="flex flex-col gap-4">
-        <Tabs defaultValue="prodej">
-          <TabsList>
-            <TabsTrigger value="prodej">Prodej</TabsTrigger>
-            <TabsTrigger value="pronajem">Pronájem</TabsTrigger>
-          </TabsList>
-        </Tabs>
-        <div className="flex flex-col gap-3 md:flex-row">
-          <Select defaultValue="byty">
-            <SelectTrigger className="md:w-52" aria-label="Kategorie nemovitosti">
-              <SelectValue placeholder="Kategorie" />
-            </SelectTrigger>
-            <SelectContent>
-              {CATEGORIES_MAIN.map((category) => (
-                <SelectItem key={category.id} value={category.slug}>
-                  {category.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Input
-            className="md:flex-1"
-            placeholder="Kde hledáte? Např. Praha, Brno…"
-            aria-label="Lokalita"
-          />
-          <Button asChild>
-            <Link href="/prodej/byty">
-              <Search />
-              Hledat
-            </Link>
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+    <section className="mx-auto w-full max-w-6xl px-4 py-16">
+      <div className="flex items-center justify-between gap-4">
+        <h2 className="text-2xl font-semibold">Nejnovější nabídky</h2>
+        <Link
+          href="/prodej/byty"
+          className="text-sm font-medium text-brand-500 transition-colors hover:text-primary"
+        >
+          Zobrazit vše
+        </Link>
+      </div>
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {items.map((item) => (
+          <ListingCard key={item.id} item={item} />
+        ))}
+      </div>
+    </section>
   )
 }
 
 function CategoryTiles() {
   return (
-    <section className="mx-auto w-full max-w-6xl px-4 py-16">
+    <section className="mx-auto w-full max-w-6xl px-4 pt-16">
       <h2 className="text-2xl font-semibold">Prohlédněte si nabídku</h2>
       <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
         {CATEGORIES_MAIN.map((category) => {
@@ -155,9 +134,10 @@ export default function HomePage() {
         </p>
       </section>
       <div className="mx-auto -mt-16 w-full max-w-4xl px-4">
-        <SearchPanel />
+        <HomeSearchPanel />
       </div>
       <CategoryTiles />
+      <LatestListings />
       <Benefits />
     </>
   )

@@ -162,10 +162,14 @@ export const listings = pgTable(
     index('listings_ordering')
       .on(sql`${table.toppedUntil} DESC NULLS LAST`, sql`${table.publishedAt} DESC`)
       .where(sql`${table.status} = 'active'`),
-    index('listings_geo').using('gist', table.locationPoint).where(sql`${table.status} = 'active'`),
+    index('listings_geo')
+      .using('gist', table.locationPoint)
+      .where(sql`${table.status} = 'active'`),
     index('listings_fts').using('gin', table.searchVector),
     index('listings_attributes').using('gin', table.attributes),
-    index('listings_expiration').on(table.validUntil).where(sql`${table.status} = 'active'`),
+    index('listings_expiration')
+      .on(table.validUntil)
+      .where(sql`${table.status} = 'active'`),
     index('listings_owner').on(table.ownerUserId),
     index('listings_agency').on(table.agencyId),
     check(

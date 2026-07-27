@@ -17,6 +17,9 @@ export const PRODUCT_CODES = {
   top7d: 'top_7d',
 } as const
 
+/** Odměna vyplácená za schválený inzerát s validním platebním QR kódem ve fotkách. */
+export const REWARD_QR_AMOUNT_CZK = 25
+
 export const DEFAULT_PRODUCTS: readonly ProductDefinition[] = [
   {
     code: PRODUCT_CODES.publikace30d,
