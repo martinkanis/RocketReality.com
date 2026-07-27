@@ -45,7 +45,7 @@ export default async function AdminUsersPage() {
               <tr key={row.id} className="border-b border-border last:border-0">
                 <td className="px-4 py-3">
                   {row.name}
-                  {row.role === 'superadmin' ? (
+                  {row.role === 'admin' ? (
                     <Badge variant="accent" className="ml-2">
                       Admin
                     </Badge>
