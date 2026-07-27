@@ -204,9 +204,9 @@ export default function HomePage() {
           Nemovitosti bez přemrštěných cen
         </h1>
         <p className="mx-auto mt-4 max-w-2xl text-base text-brand-100 sm:text-lg">
-          Inzertní server, kde neplatíte vy nám — platíme my vám. Za zveřejnění inzerátu s platebním
-          QR kódem vyplácíme prvním {REWARD_MAX_ADVERTISERS} inzerentům {REWARD_QR_AMOUNT_CZK} Kč za
-          inzerát, až za {REWARD_MAX_LISTINGS_PER_ADVERTISER} inzerátů.
+          Inzertní server, kde neplatíte vy nám — platíme my vám. Prvních {REWARD_MAX_ADVERTISERS}{' '}
+          inzerentů od nás dostane {REWARD_QR_AMOUNT_CZK} Kč za každý zveřejněný inzerát s platebním
+          QR kódem. Až {REWARD_QR_AMOUNT_CZK * REWARD_MAX_LISTINGS_PER_ADVERTISER} Kč na účet.
         </p>
       </section>
       <div className="mx-auto -mt-16 w-full max-w-4xl px-4">
