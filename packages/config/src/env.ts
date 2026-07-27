@@ -24,6 +24,9 @@ const envSchema = z.object({
 
   AUTH_SECRET: z.string().min(16).default('dev-secret-change-me-in-production'),
 
+  ADMIN_EMAIL: z.email().optional(),
+  ADMIN_PASSWORD: z.string().min(8).optional(),
+
   PAYMENTS_PROVIDER: z.enum(['free', 'stripe']).default('free'),
   STRIPE_SECRET_KEY: z.string().optional(),
   STRIPE_WEBHOOK_SECRET: z.string().optional(),

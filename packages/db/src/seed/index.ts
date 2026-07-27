@@ -1,4 +1,5 @@
 import { closeDb, getDb } from '../client'
+import { seedAdminAccount } from './admin'
 import { seedCatalogs } from './catalogs'
 import { seedDemoData } from './demo'
 
@@ -6,6 +7,7 @@ async function main() {
   const db = getDb()
   await seedCatalogs(db)
   process.stdout.write('Číselníky naseedovány.\n')
+  await seedAdminAccount(db)
   if (process.env.NODE_ENV !== 'production') {
     await seedDemoData(db)
     process.stdout.write('Demo data naseedována.\n')
