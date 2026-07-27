@@ -18,7 +18,15 @@ export const PRODUCT_CODES = {
 } as const
 
 /** Odměna vyplácená za schválený inzerát s validním platebním QR kódem ve fotkách. */
-export const REWARD_QR_AMOUNT_CZK = 25
+export const REWARD_QR_AMOUNT_CZK = 50
+
+/**
+ * Podmínky launch akce — odměnu dostává prvních REWARD_MAX_ADVERTISERS
+ * inzerentů, každý nejvýše za REWARD_MAX_LISTINGS_PER_ADVERTISER inzerátů.
+ * Limity hlídá admin při schvalování výplat, kód je nevynucuje.
+ */
+export const REWARD_MAX_ADVERTISERS = 100
+export const REWARD_MAX_LISTINGS_PER_ADVERTISER = 10
 
 export const DEFAULT_PRODUCTS: readonly ProductDefinition[] = [
   {
