@@ -1,6 +1,6 @@
 'use client'
 
-import { BellRing, Heart, LayoutDashboard, List, Settings } from 'lucide-react'
+import { BellRing, Heart, KeyRound, LayoutDashboard, List, Settings } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -18,6 +18,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/muj-ucet/inzeraty', label: 'Moje inzeráty', icon: List },
   { href: '/muj-ucet/oblibene', label: 'Oblíbené', icon: Heart },
   { href: '/muj-ucet/hlidaci-pes', label: 'Hlídací pes', icon: BellRing },
+  { href: '/muj-ucet/api-klice', label: 'API klíče', icon: KeyRound },
   { href: '/muj-ucet/nastaveni', label: 'Nastavení', icon: Settings },
 ]
 

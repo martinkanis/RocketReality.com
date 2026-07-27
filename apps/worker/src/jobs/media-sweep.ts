@@ -1,4 +1,4 @@
-import { and, eq, lt } from 'drizzle-orm'
+import { and, eq, isNull, lt } from 'drizzle-orm'
 import { getDb, listingMedia } from '@rocket/db'
 import { createLogger } from '../logger'
 import { defineJob } from './define-job'
@@ -26,6 +26,8 @@ export const mediaSweepJob = defineJob({
         and(
           eq(listingMedia.isReady, false),
           eq(listingMedia.kind, 'foto'),
+          // Importované fotky (sourceUrl) stahuje a zpracovává import-media-sweep.
+          isNull(listingMedia.sourceUrl),
           lt(listingMedia.createdAt, new Date(Date.now() - MIN_AGE_MS)),
         ),
       )

@@ -189,6 +189,8 @@ export const listingMedia = pgTable(
     kind: mediaKindEnum().notNull().default('foto'),
     position: smallint().notNull().default(0),
     storageKey: text().notNull(),
+    /** Zdrojová URL u importovaných fotek — worker je stáhne do storageKey. */
+    sourceUrl: text(),
     alt: text(),
     mime: text(),
     fileSize: integer(),

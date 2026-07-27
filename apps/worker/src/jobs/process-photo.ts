@@ -31,7 +31,7 @@ const logger = createLogger('media.process')
 
 let cachedS3Client: S3Client | null = null
 
-function getS3Client(): S3Client {
+export function getS3Client(): S3Client {
   if (cachedS3Client) return cachedS3Client
   const env = loadEnv()
   cachedS3Client = new S3Client({

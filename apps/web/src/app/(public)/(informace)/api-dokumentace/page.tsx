@@ -150,12 +150,17 @@ export default function ApiDokumentacePage() {
       <section className="mt-8">
         <h2 className="text-xl font-semibold">Získání API klíče</h2>
         <p className="mt-3 leading-relaxed">
-          API klíč vydáváme na vyžádání. Napište nám na{' '}
+          Klíč si vytvoříte sami po přihlášení v sekci{' '}
+          <a href="/muj-ucet/api-klice" className="underline">
+            Můj účet → API klíče
+          </a>
+          . Zobrazí se jedinkrát při vytvoření, uložte si ho bezpečně. Importované inzeráty se
+          zakládají pod vaším účtem (a vaší realitní kanceláří, pokud v ní jste), klíč můžete
+          kdykoli deaktivovat. S dotazy se ozvěte na{' '}
           <a href="mailto:obchod@rocketreality.cz" className="underline">
             obchod@rocketreality.cz
-          </a>{' '}
-          — uveďte název realitní kanceláře nebo softwaru a přibližný počet inzerátů. Klíč je vázaný
-          na vaši kancelář a lze ho kdykoli deaktivovat.
+          </a>
+          .
         </p>
       </section>
 
