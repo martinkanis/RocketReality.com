@@ -132,13 +132,19 @@ export default async function AdminDashboardPage() {
                 <tbody>
                   {topListings.map((row) => (
                     <tr key={row.id} className="border-b border-border last:border-0">
-                      <td className="max-w-80 truncate px-4 py-3">
+                      <td className="max-w-80 px-4 py-3">
                         {row.status === 'active' ? (
-                          <Link href={`/detail/${row.slug}`} className="hover:text-primary">
+                          <Link
+                            href={`/detail/${row.slug}`}
+                            className="line-clamp-2 hover:text-primary"
+                            title={row.title}
+                          >
                             {row.title}
                           </Link>
                         ) : (
-                          row.title
+                          <span className="line-clamp-2" title={row.title}>
+                            {row.title}
+                          </span>
                         )}
                       </td>
                       <td className="px-4 py-3">{row.agencyName ?? row.ownerName}</td>

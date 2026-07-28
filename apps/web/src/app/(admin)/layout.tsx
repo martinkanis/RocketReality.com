@@ -14,7 +14,7 @@ const NAV_ITEMS = [
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   await requireSuperadmin()
   return (
-    <div className="mx-auto flex w-full max-w-6xl gap-8 px-4 py-8">
+    <div className="mx-auto flex w-full max-w-[110rem] gap-8 px-4 py-8">
       <aside className="w-48 shrink-0">
         <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Administrace

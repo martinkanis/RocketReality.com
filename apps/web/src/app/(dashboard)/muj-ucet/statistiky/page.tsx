@@ -142,8 +142,12 @@ export default async function StatisticsPage() {
                 <tbody>
                   {topListings.map((row) => (
                     <tr key={row.listingId} className="border-b border-border last:border-0">
-                      <td className="max-w-80 truncate px-4 py-3">
-                        <Link href={`/detail/${row.slug}`} className="hover:text-primary">
+                      <td className="max-w-80 px-4 py-3">
+                        <Link
+                          href={`/detail/${row.slug}`}
+                          className="line-clamp-2 hover:text-primary"
+                          title={row.title}
+                        >
                           {row.title}
                         </Link>
                       </td>
