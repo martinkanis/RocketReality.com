@@ -4,6 +4,7 @@ import {
   check,
   index,
   inet,
+  integer,
   jsonb,
   pgTable,
   primaryKey,
@@ -12,6 +13,7 @@ import {
   timestamp,
   uuid,
 } from 'drizzle-orm/pg-core'
+import { agencies } from './agencies'
 import { users } from './auth'
 import { messageStatusEnum, savedSearchFrequencyEnum } from './enums'
 import { createdAt, updatedAt, uuidPrimaryKey } from './helpers'
@@ -88,5 +90,30 @@ export const contactMessages = pgTable(
     index().on(table.listingId, table.createdAt),
     index('contact_messages_rate_limit').on(table.ip, table.createdAt),
     check('contact_messages_spam_score', sql`${table.spamScore} BETWEEN 0 AND 100`),
+  ],
+)
+
+/**
+ * Zobrazení detailu inzerátu nebo profilu kanceláře — pro statistiky
+ * majitelů (kolik lidí přišlo, jak dlouho tam byli). Právě jedno z
+ * listingId/agencyId je vždy vyplněné. durationSeconds se dopočítá
+ * až při odchodu ze stránky (sendBeacon), do té doby je null.
+ */
+export const pageViews = pgTable(
+  'page_views',
+  {
+    id: uuidPrimaryKey(),
+    listingId: uuid().references(() => listings.id, { onDelete: 'cascade' }),
+    agencyId: uuid().references(() => agencies.id, { onDelete: 'cascade' }),
+    durationSeconds: integer(),
+    createdAt: createdAt(),
+  },
+  (table) => [
+    index().on(table.listingId, table.createdAt),
+    index().on(table.agencyId, table.createdAt),
+    check(
+      'page_views_exactly_one_entity',
+      sql`(${table.listingId} IS NOT NULL)::int + (${table.agencyId} IS NOT NULL)::int = 1`,
+    ),
   ],
 )

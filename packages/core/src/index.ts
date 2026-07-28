@@ -1,6 +1,7 @@
 export * from './agencies/ares'
 export * from './billing/payment-provider'
 export * from './billing/orders'
+export * from './engagement/page-views'
 export * from './import/service'
 export * from './listings/service'
 export * from './mortgage/calculate'

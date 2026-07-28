@@ -1,3 +1,4 @@
+import { recordAgencyView } from '@rocket/core'
 import { agencies, agencyMembers, getDb, listings, users } from '@rocket/db'
 import { and, asc, eq } from 'drizzle-orm'
 import { Globe, Mail, Phone } from 'lucide-react'
@@ -10,8 +11,15 @@ import { AgencyListingCard } from '@/features/agencies/agency-listing-card'
 import { AgencyLogo } from '@/features/agencies/agency-logo'
 import { loadActiveListingCards } from '@/features/agencies/queries'
 import { RatingStars } from '@/features/agencies/rating-stars'
+import { ViewDurationTracker } from '@/features/analytics/view-duration-tracker'
+import { createLogger } from '@/lib/logger'
+
+// Každá návštěva se zaznamenává, stránka se proto nesmí cachovat.
+export const dynamic = 'force-dynamic'
 
 const LISTINGS_PAGE_SIZE = 12
+
+const logger = createLogger('agency.profile')
 
 interface AgencyProfilePageProps {
   params: Promise<{ slug: string }>
@@ -75,8 +83,15 @@ export default async function AgencyProfilePage({ params, searchParams }: Agency
   ])
   const totalPages = Math.max(1, Math.ceil(listingPage.total / LISTINGS_PAGE_SIZE))
 
+  // Id návštěvy zná jen tento render — klient jím po odchodu doplní délku návštěvy.
+  const viewId = crypto.randomUUID()
+  recordAgencyView(viewId, agency.id).catch((error: unknown) => {
+    logger.error({ err: error, agencyId: agency.id }, 'Záznam návštěvy kanceláře selhal')
+  })
+
   return (
     <div>
+      <ViewDurationTracker viewId={viewId} />
       <header className="flex flex-col gap-4 sm:flex-row sm:items-start">
         <AgencyLogo name={agency.name} logoKey={agency.logoKey} className="size-20 text-2xl" />
         <div className="min-w-0 flex-1">

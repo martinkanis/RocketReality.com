@@ -43,6 +43,13 @@
       "when": 1785178469697,
       "tag": "0005_import_api",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1785254241466,
+      "tag": "0006_page_views",
+      "breakpoints": true
     }
   ]
 }

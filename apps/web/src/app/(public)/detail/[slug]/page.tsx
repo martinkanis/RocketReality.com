@@ -1,5 +1,5 @@
 import { loadEnv } from '@rocket/config'
-import { incrementViewCount } from '@rocket/core'
+import { incrementViewCount, recordListingView } from '@rocket/core'
 import {
   CATEGORY_MAIN_BY_ID,
   KRAJ_LABELS,
@@ -33,6 +33,7 @@ import {
 } from '@/features/listing-detail/structured-data'
 import { buildSearchHeading } from '@/features/search/labels'
 import { buildSearchPath } from '@/features/search/url'
+import { ViewDurationTracker } from '@/features/analytics/view-duration-tracker'
 import { createLogger } from '@/lib/logger'
 import { mediaUrl, mediaVariantUrl } from '@/lib/media'
 import { isFavorite as isListingFavorite } from '@/features/favorites/actions'
@@ -113,10 +114,16 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
     isOwnerPreview = true
   }
 
-  if (!isOwnerPreview) {
-    // Fire-and-forget — počítadlo zobrazení nesmí zdržet ani shodit render.
+  // Id návštěvy zná jen tento render — klient jím po odchodu doplní délku návštěvy.
+  const viewId = isOwnerPreview ? null : crypto.randomUUID()
+
+  if (viewId) {
+    // Fire-and-forget — statistiky nesmí zdržet ani shodit render.
     incrementViewCount(listing.id).catch((error: unknown) => {
       logger.error({ err: error, listingId: listing.id }, 'Navýšení počtu zobrazení selhalo')
+    })
+    recordListingView(viewId, listing.id).catch((error: unknown) => {
+      logger.error({ err: error, listingId: listing.id }, 'Záznam návštěvy inzerátu selhal')
     })
   }
 
@@ -189,6 +196,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
           dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
         />
       ))}
+      {viewId ? <ViewDurationTracker viewId={viewId} /> : null}
       <Breadcrumbs items={breadcrumbItems} />
       {INACTIVE_BANNER_STATUSES.some((status) => status === listing.status) && (
         <div className="mt-4 rounded-md bg-warning-bg px-4 py-3 text-sm font-medium text-warning">
