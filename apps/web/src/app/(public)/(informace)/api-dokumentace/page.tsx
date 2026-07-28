@@ -33,6 +33,17 @@ const REQUEST_EXAMPLE = `curl -X POST ${API_BASE_URL}${IMPORT_ENDPOINT_PATH} \\
     "photos": [
       { "url": "https://www.vase-rk.cz/foto/dum-1.jpg", "alt": "Pohled na dům" }
     ],
+    "attributes": {
+      "ownership": "osobni",
+      "buildingType": "cihlova",
+      "buildingCondition": "po_rekonstrukci",
+      "energyLabel": "C",
+      "floorsTotal": 2,
+      "gardenArea": 620,
+      "hasGarage": true,
+      "garageCount": 1,
+      "orientation": ["jih", "zapad"]
+    },
     "agent": {
       "name": "Jan Novák",
       "email": "jan.novak@vase-rk.cz",
@@ -130,11 +141,45 @@ const FIELD_ROWS: FieldRow[] = [
       'Fotografie jako { url, alt }. Adresy musí být veřejně dostupné — portál si fotografie stáhne při zpracování.',
   },
   {
+    name: 'attributes',
+    type: 'objekt',
+    required: 'ne',
+    description:
+      'Podrobné parametry nemovitosti — viz samostatná tabulka níže. Posílejte jen ta, která znáte.',
+  },
+  {
     name: 'agent',
     type: 'objekt | null',
     required: 'ne',
     description: 'Kontakt na makléře: name, email, phone. Zobrazí se u inzerátu.',
   },
+]
+
+const ATTRIBUTE_ROWS: FieldRow[] = [
+  { name: 'ownership', type: 'osobni | druzstevni | statni_obecni', required: 'ne', description: 'Typ vlastnictví.' },
+  { name: 'buildingType', type: 'cihlova | panelova | drevostavba | skeletova | montovana | smisena | kamenna | jina', required: 'ne', description: 'Konstrukce budovy.' },
+  { name: 'buildingCondition', type: 'novostavba | velmi_dobry | dobry | spatny | ve_vystavbe | projekt | pred_rekonstrukci | v_rekonstrukci | po_rekonstrukci | k_demolici', required: 'ne', description: 'Stav budovy.' },
+  { name: 'furnishing', type: 'zarizeno | castecne_zarizeno | nezarizeno', required: 'ne', description: 'Míra vybavení.' },
+  { name: 'energyLabel', type: 'A … G', required: 'ne', description: 'Energetická náročnost budovy.' },
+  { name: 'priceUnit', type: 'celkem | za_m2 | za_mesic | za_m2_mesic | za_m2_rok | dohodou', required: 'ne', description: 'Jednotka ceny. Bez uvedení se u pronájmů použije za_mesic, jinak celkem.' },
+  { name: 'floorNumber', type: 'number', required: 'ne', description: 'Podlaží, ve kterém se nemovitost nachází.' },
+  { name: 'floorsTotal', type: 'number', required: 'ne', description: 'Počet podlaží budovy.' },
+  { name: 'builtUpArea', type: 'number', required: 'ne', description: 'Zastavěná plocha v m².' },
+  { name: 'gardenArea', type: 'number', required: 'ne', description: 'Plocha zahrady v m².' },
+  { name: 'monthlyFees', type: 'number', required: 'ne', description: 'Měsíční poplatky v Kč.' },
+  { name: 'deposit', type: 'number', required: 'ne', description: 'Kauce v Kč (u pronájmů).' },
+  { name: 'availableFrom', type: 'string (datum)', required: 'ne', description: 'K nastěhování od. Přijímáme datum i datum s časem, uloží se datum.' },
+  { name: 'orientation', type: 'pole hodnot', required: 'ne', description: 'Světové strany: sever, jih, vychod, zapad, severovychod, severozapad, jihovychod, jihozapad.' },
+  { name: 'hasBalcony / balconyArea', type: 'boolean / number', required: 'ne', description: 'Balkon a jeho plocha v m².' },
+  { name: 'hasTerrace / terraceArea', type: 'boolean / number', required: 'ne', description: 'Terasa a její plocha v m².' },
+  { name: 'hasLoggia / loggiaArea', type: 'boolean / number', required: 'ne', description: 'Lodžie a její plocha v m².' },
+  { name: 'hasCellar / cellarArea', type: 'boolean / number', required: 'ne', description: 'Sklep a jeho plocha v m².' },
+  { name: 'hasElevator', type: 'boolean', required: 'ne', description: 'Výtah v budově.' },
+  { name: 'hasGarage / garageCount', type: 'boolean / number', required: 'ne', description: 'Garáž a počet stání.' },
+  { name: 'hasParking / parkingCount', type: 'boolean / number', required: 'ne', description: 'Parkování a počet míst.' },
+  { name: 'barrierFree', type: 'boolean', required: 'ne', description: 'Bezbariérový přístup.' },
+  { name: 'videoUrl', type: 'string (URL)', required: 'ne', description: 'Odkaz na video prohlídku.' },
+  { name: 'virtualTourUrl', type: 'string (URL)', required: 'ne', description: 'Odkaz na virtuální prohlídku.' },
 ]
 
 const RESPONSE_ROWS = [
@@ -204,6 +249,34 @@ Content-Type: application/json`}
                   <td className="py-2 pr-4 font-mono">{row.name}</td>
                   <td className="py-2 pr-4 font-mono">{row.type}</td>
                   <td className="py-2 pr-4">{row.required}</td>
+                  <td className="py-2 leading-relaxed">{row.description}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section className="mt-8">
+        <h2 className="text-xl font-semibold">Parametry nemovitosti (attributes)</h2>
+        <p className="mt-3 leading-relaxed">
+          Všechny parametry jsou nepovinné — pošlete jen ty, které znáte. Nevyplněný parametr
+          hodnotu na inzerátu nepřepíše, takže opakovaný import nezruší údaje doplněné ručně.
+        </p>
+        <div className="mt-3 overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead>
+              <tr className="border-b border-brand-200">
+                <th className="py-2 pr-4 font-semibold">Pole</th>
+                <th className="py-2 pr-4 font-semibold">Hodnoty</th>
+                <th className="py-2 font-semibold">Popis</th>
+              </tr>
+            </thead>
+            <tbody>
+              {ATTRIBUTE_ROWS.map((row) => (
+                <tr key={row.name} className="border-b border-brand-100 align-top">
+                  <td className="py-2 pr-4 font-mono">{row.name}</td>
+                  <td className="py-2 pr-4 font-mono">{row.type}</td>
                   <td className="py-2 leading-relaxed">{row.description}</td>
                 </tr>
               ))}

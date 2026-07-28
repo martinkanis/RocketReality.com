@@ -9,13 +9,57 @@ import {
   listings,
   municipalities,
 } from '@rocket/db'
-import { CATEGORY_BYTY_ID, DISPOSITIONS } from '@rocket/shared'
+import {
+  BUILDING_CONDITIONS,
+  BUILDING_TYPES,
+  CATEGORY_BYTY_ID,
+  DISPOSITIONS,
+  ENERGY_LABELS,
+  FURNISHING_TYPES,
+  ORIENTATIONS,
+  OWNERSHIP_TYPES,
+  PRICE_UNITS,
+} from '@rocket/shared'
 import type { Disposition, TransactionType } from '@rocket/shared'
 import { and, eq, isNotNull, sql } from 'drizzle-orm'
 import { z } from 'zod'
 import { submitListingForReview } from '../listings/service'
 
 const MAX_IMPORT_PHOTOS = 20
+
+/** Nepovinné parametry nemovitosti. Nevyplněné se do inzerátu nepropíšou. */
+const importAttributesSchema = z.object({
+  ownership: z.enum(OWNERSHIP_TYPES).nullish(),
+  buildingType: z.enum(BUILDING_TYPES).nullish(),
+  buildingCondition: z.enum(BUILDING_CONDITIONS).nullish(),
+  furnishing: z.enum(FURNISHING_TYPES).nullish(),
+  energyLabel: z.enum(ENERGY_LABELS).nullish(),
+  priceUnit: z.enum(PRICE_UNITS).nullish(),
+  floorNumber: z.number().int().min(-5).max(200).nullish(),
+  floorsTotal: z.number().int().min(1).max(200).nullish(),
+  builtUpArea: z.number().positive().nullish(),
+  gardenArea: z.number().positive().nullish(),
+  monthlyFees: z.number().nonnegative().nullish(),
+  deposit: z.number().nonnegative().nullish(),
+  availableFrom: z.string().max(40).nullish(),
+  orientation: z.array(z.enum(ORIENTATIONS)).max(8).nullish(),
+  hasBalcony: z.boolean().nullish(),
+  balconyArea: z.number().positive().nullish(),
+  hasTerrace: z.boolean().nullish(),
+  terraceArea: z.number().positive().nullish(),
+  hasLoggia: z.boolean().nullish(),
+  loggiaArea: z.number().positive().nullish(),
+  hasCellar: z.boolean().nullish(),
+  cellarArea: z.number().positive().nullish(),
+  hasElevator: z.boolean().nullish(),
+  hasGarage: z.boolean().nullish(),
+  garageCount: z.number().int().min(0).max(50).nullish(),
+  hasParking: z.boolean().nullish(),
+  parkingCount: z.number().int().min(0).max(200).nullish(),
+  barrierFree: z.boolean().nullish(),
+  videoUrl: z.url().nullish(),
+  virtualTourUrl: z.url().nullish(),
+})
 
 /** Kontrakt POST /api/import/inzeraty — musí odpovídat stránce /api-dokumentace. */
 export const importListingSchema = z.object({
@@ -36,6 +80,7 @@ export const importListingSchema = z.object({
     postalCode: z.string().max(10).optional(),
     region: z.string().max(100).optional(),
   }),
+  attributes: importAttributesSchema.optional(),
   photos: z
     .array(z.object({ url: z.url(), alt: z.string().max(300).optional() }))
     .max(MAX_IMPORT_PHOTOS),
@@ -49,6 +94,7 @@ export const importListingSchema = z.object({
 })
 
 export type ImportListingInput = z.infer<typeof importListingSchema>
+type ImportAttributes = z.infer<typeof importAttributesSchema>
 
 export interface ImportFeedIdentity {
   id: string
@@ -142,6 +188,7 @@ function listingValuesFromInput(
       'U bytu je potřeba dispozice — pošlete pole "disposition" (např. "2+1") nebo ji uveďte v názvu',
     )
   }
+  const attributes = input.attributes ?? {}
   return {
     title: input.title,
     description: input.description ?? '',
@@ -151,18 +198,72 @@ function listingValuesFromInput(
     priceAmount: input.price ?? null,
     priceHidden: input.price == null,
     priceNote: input.priceNote ?? null,
-    priceUnit: input.offerType === 'rent' ? ('za_mesic' as const) : ('celkem' as const),
+    priceUnit:
+      attributes.priceUnit ??
+      (input.offerType === 'rent' ? ('za_mesic' as const) : ('celkem' as const)),
     areaUsable: input.size ?? null,
     street: input.location.street ?? null,
     municipalityId: resolved.municipalityId,
     districtId: resolved.districtId,
     kraj: resolved.kraj,
     locationPoint: { x: resolved.centroid!.x, y: resolved.centroid!.y },
+    ...mapOptionalAttributes(attributes),
     attributes: {
       importAgent: input.agent ?? null,
       importSourceUrl: input.sourceUrl ?? null,
     },
   }
+}
+
+/**
+ * Nepovinné parametry se propisují jen když dorazily — sloupce s NOT NULL
+ * (příznaky vybavení, energetický štítek) si jinak nechají výchozí hodnotu
+ * a opakovaný import bez parametrů nepřepíše to, co inzerent vyplnil ručně.
+ */
+function mapOptionalAttributes(attributes: ImportAttributes) {
+  const values: Record<string, unknown> = {}
+  const setIfPresent = (column: string, value: unknown) => {
+    if (value !== undefined && value !== null) values[column] = value
+  }
+
+  setIfPresent('ownership', attributes.ownership)
+  setIfPresent('buildingType', attributes.buildingType)
+  setIfPresent('buildingCondition', attributes.buildingCondition)
+  setIfPresent('furnishing', attributes.furnishing)
+  setIfPresent('energyLabel', attributes.energyLabel)
+  setIfPresent('floorNumber', attributes.floorNumber)
+  setIfPresent('floorsTotal', attributes.floorsTotal)
+  setIfPresent('areaBuiltUp', attributes.builtUpArea)
+  setIfPresent('areaGarden', attributes.gardenArea)
+  setIfPresent('monthlyFees', attributes.monthlyFees)
+  setIfPresent('deposit', attributes.deposit)
+  setIfPresent('availableFrom', normalizeDateOnly(attributes.availableFrom))
+  setIfPresent('orientation', attributes.orientation)
+  setIfPresent('hasBalcony', attributes.hasBalcony)
+  setIfPresent('balconyArea', attributes.balconyArea)
+  setIfPresent('hasTerrace', attributes.hasTerrace)
+  setIfPresent('terraceArea', attributes.terraceArea)
+  setIfPresent('hasLoggia', attributes.hasLoggia)
+  setIfPresent('loggiaArea', attributes.loggiaArea)
+  setIfPresent('hasCellar', attributes.hasCellar)
+  setIfPresent('cellarArea', attributes.cellarArea)
+  setIfPresent('hasElevator', attributes.hasElevator)
+  setIfPresent('hasGarage', attributes.hasGarage)
+  setIfPresent('garageCount', attributes.garageCount)
+  setIfPresent('hasParking', attributes.hasParking)
+  setIfPresent('parkingCount', attributes.parkingCount)
+  setIfPresent('barrierFree', attributes.barrierFree)
+  setIfPresent('videoUrl', attributes.videoUrl)
+  setIfPresent('virtualTourUrl', attributes.virtualTourUrl)
+
+  return values
+}
+
+/** Sloupec availableFrom je typu date — z ISO data i data s časem vezme jen datum. */
+function normalizeDateOnly(value: string | null | undefined): string | null {
+  if (!value) return null
+  const parsed = new Date(value)
+  return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString().slice(0, 10)
 }
 
 /** Sesynchronizuje importované fotky podle sourceUrl — nové přidá, chybějící smaže. */
