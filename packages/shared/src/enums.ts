@@ -152,6 +152,16 @@ export const LISTING_STATUS_LABELS: Record<ListingStatus, string> = {
   rejected: 'Zamítnuto',
 }
 
+/**
+ * Jak dlouho po archivaci zůstává prodaná/pronajatá nabídka veřejně dohledatelná
+ * v archivu. Než naroste základna aktivních inzerátů, dává archiv návštěvníkům
+ * představu o cenách v lokalitě.
+ */
+export const ARCHIVE_VISIBILITY_DAYS = 90
+
+/** Důvody archivace, po kterých inzerát zůstává v archivu — stažené nabídky tam nepatří. */
+export const PUBLIC_ARCHIVE_REASONS = ['prodano', 'pronajato'] as const
+
 export const ARCHIVE_REASONS = ['prodano', 'pronajato', 'stazeno_inzerentem', 'jine'] as const
 export type ArchiveReason = (typeof ARCHIVE_REASONS)[number]
 export const ARCHIVE_REASON_LABELS: Record<ArchiveReason, string> = {

@@ -14,6 +14,7 @@ const NAV_ITEMS = [
   { href: '/drazby/byty', label: 'Dražby' },
   { href: '/mapa', label: 'Mapa' },
   { href: '/realitni-kancelare', label: 'Realitní kanceláře' },
+  { href: '/archiv', label: 'Archiv' },
 ] as const
 
 const LINK_CLASS = 'text-sm font-medium transition-colors hover:text-brand-700'

@@ -4,6 +4,7 @@ import {
   CATEGORY_MAIN_BY_ID,
   KRAJ_LABELS,
   LISTING_STATUS_LABELS,
+  PUBLIC_ARCHIVE_REASONS,
   formatPrice,
 } from '@rocket/shared'
 import { House } from 'lucide-react'
@@ -34,6 +35,7 @@ import {
 import { buildSearchHeading } from '@/features/search/labels'
 import { buildSearchPath } from '@/features/search/url'
 import { ViewDurationTracker } from '@/features/analytics/view-duration-tracker'
+import { archiveVisibleSince } from '@/features/archive/queries'
 import { createLogger } from '@/lib/logger'
 import { mediaUrl, mediaVariantUrl } from '@/lib/media'
 import { isFavorite as isListingFavorite } from '@/features/favorites/actions'
@@ -46,6 +48,14 @@ const logger = createLogger('listing-detail-page')
 
 const PUBLICLY_VISIBLE_STATUSES = ['active', 'paused', 'expired'] as const
 const INACTIVE_BANNER_STATUSES = ['paused', 'expired'] as const
+
+/** Prodaná/pronajatá nabídka zůstává veřejná po dobu archivu — viz sekce /archiv. */
+function isPubliclyArchived(listing: ListingRow): boolean {
+  if (listing.status !== 'archived' || listing.deletedAt) return false
+  const isPublicReason = PUBLIC_ARCHIVE_REASONS.some((reason) => reason === listing.archiveReason)
+  if (!isPublicReason || !listing.statusChangedAt) return false
+  return listing.statusChangedAt >= archiveVisibleSince()
+}
 
 const SIMILAR_LISTINGS_COUNT = 4
 const DEFAULT_DOWN_PAYMENT_RATIO = 0.2
@@ -60,7 +70,10 @@ interface ListingDetailPageProps {
 const priceLineFormatter = new Intl.NumberFormat('cs-CZ', { maximumFractionDigits: 0 })
 
 function isPubliclyVisible(listing: ListingRow): boolean {
-  return PUBLICLY_VISIBLE_STATUSES.some((status) => status === listing.status)
+  return (
+    PUBLICLY_VISIBLE_STATUSES.some((status) => status === listing.status) ||
+    isPubliclyArchived(listing)
+  )
 }
 
 /** Ulice podle nastavené viditelnosti adresy (přesná / jen ulice / jen obec). */
@@ -113,6 +126,8 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
     if (!user || user.id !== listing.ownerUserId) notFound()
     isOwnerPreview = true
   }
+
+  const isArchived = !isOwnerPreview && isPubliclyArchived(listing)
 
   // Id návštěvy zná jen tento render — klient jím po odchodu doplní délku návštěvy.
   const viewId = isOwnerPreview ? null : crypto.randomUUID()
@@ -203,6 +218,13 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
           Inzerát již není aktivní.
         </div>
       )}
+      {isArchived && (
+        <div className="mt-4 rounded-md bg-warning-bg px-4 py-3 text-sm font-medium text-warning">
+          Archivní nabídka —{' '}
+          {listing.archiveReason === 'pronajato' ? 'nemovitost je pronajatá' : 'nemovitost je prodaná'}
+          . Zobrazujeme ji pro porovnání cen v lokalitě.
+        </div>
+      )}
       {isOwnerPreview && (
         <div className="mt-4 rounded-md bg-info-bg px-4 py-3 text-sm font-medium text-info">
           Náhled inzerátu — stav: {LISTING_STATUS_LABELS[listing.status]}. Inzerát není veřejně
@@ -280,7 +302,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
           </section>
         </div>
         <aside className="flex flex-col gap-6 print:hidden">
-          <AdvertiserCard detail={detail} />
+          {isArchived ? <ArchivedNotice listing={listing} /> : <AdvertiserCard detail={detail} />}
           {showMortgageCalculator && listing.priceAmount !== null && (
             <Card>
               <CardHeader>
@@ -309,6 +331,32 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
         </section>
       )}
     </div>
+  )
+}
+
+/** Místo kontaktu na inzerenta — u archivované nabídky nemá smysl psát dotaz. */
+function ArchivedNotice({ listing }: { listing: ListingRow }) {
+  const reasonLabel =
+    listing.archiveReason === 'pronajato' ? 'pronajata' : ('prodána' as const)
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Nabídka je uzavřená</CardTitle>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-3 text-sm">
+        <p className="leading-relaxed text-muted-foreground">
+          Tato nemovitost byla {reasonLabel}
+          {listing.statusChangedAt ? ` ${listing.statusChangedAt.toLocaleDateString('cs-CZ')}` : ''}.
+          Necháváme ji v archivu pro porovnání cen, inzerenta už ale kontaktovat nelze.
+        </p>
+        <Link href="/archiv" className="font-medium text-brand-500 hover:text-primary">
+          Další nabídky v archivu
+        </Link>
+        <Link href="/prodej/byty" className="font-medium text-brand-500 hover:text-primary">
+          Prohlédnout aktuální nabídku
+        </Link>
+      </CardContent>
+    </Card>
   )
 }
 

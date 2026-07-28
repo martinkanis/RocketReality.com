@@ -7,6 +7,7 @@ const OFFER_LINKS = [
   { href: '/prodej/pozemky', label: 'Prodej pozemků' },
   { href: '/pronajem/byty', label: 'Pronájem bytů' },
   { href: '/drazby/byty', label: 'Dražby' },
+  { href: '/archiv', label: 'Archiv nabídek' },
 ] as const
 
 const COMPANY_LINKS = [
