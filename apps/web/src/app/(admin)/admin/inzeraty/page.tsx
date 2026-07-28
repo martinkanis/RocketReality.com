@@ -10,6 +10,7 @@ import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { ListingRowActions } from '@/features/admin/listing-row-actions'
 
 export const metadata = { title: 'Inzeráty' }
 
@@ -51,7 +52,7 @@ export default async function AdminListingsPage({ searchParams }: AdminListingsP
   const ownerType = firstParam(params.typ)
   const page = Math.max(Number.parseInt(firstParam(params.strana), 10) || 1, 1)
 
-  const conditions: SQL[] = []
+  const conditions: SQL[] = [isNull(listings.deletedAt)]
   if ((LISTING_STATUSES as readonly string[]).includes(statusFilter)) {
     conditions.push(eq(listings.status, statusFilter as ListingStatus))
   }
@@ -63,7 +64,7 @@ export default async function AdminListingsPage({ searchParams }: AdminListingsP
   } else if (ownerType === ('kancelar' satisfies OwnerType)) {
     conditions.push(isNotNull(listings.agencyId))
   }
-  const whereClause = conditions.length > 0 ? and(...conditions) : undefined
+  const whereClause = and(...conditions)
 
   const db = getDb()
   const [totalRow] = await db
@@ -169,12 +170,13 @@ export default async function AdminListingsPage({ searchParams }: AdminListingsP
               <th className="px-4 py-3">Inzerent</th>
               <th className="px-4 py-3 text-right">Zhlédnutí</th>
               <th className="px-4 py-3">Vloženo</th>
+              <th className="px-4 py-3">Akce</th>
             </tr>
           </thead>
           <tbody>
             {rows.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
+                <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
                   Zadaným filtrům neodpovídá žádný inzerát.
                 </td>
               </tr>
@@ -209,6 +211,9 @@ export default async function AdminListingsPage({ searchParams }: AdminListingsP
                   <td className="px-4 py-3">{row.agencyName ?? row.ownerName}</td>
                   <td className="px-4 py-3 text-right">{row.viewCount}</td>
                   <td className="px-4 py-3">{row.createdAt.toLocaleDateString('cs-CZ')}</td>
+                  <td className="px-4 py-3">
+                    <ListingRowActions listingId={row.id} status={row.status} />
+                  </td>
                 </tr>
               ))
             )}

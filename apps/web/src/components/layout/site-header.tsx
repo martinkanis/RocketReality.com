@@ -2,7 +2,6 @@
 
 import { Menu, X } from 'lucide-react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
 import { BrandSymbol } from '@/components/layout/brand-symbol'
@@ -33,16 +32,19 @@ function Logo() {
 
 /** Odkazy vpravo v hlavičce podle stavu přihlášení. */
 function AccountLinks({ onNavigate }: { onNavigate?: () => void }) {
-  const router = useRouter()
   const { data: session, isPending } = authClient.useSession()
   const [isSigningOut, setIsSigningOut] = useState(false)
 
   async function handleSignOut() {
     setIsSigningOut(true)
-    await authClient.signOut()
-    onNavigate?.()
-    router.push('/')
-    router.refresh()
+    try {
+      await authClient.signOut()
+      onNavigate?.()
+      // Plné načtení: zahodí i server-rendered stránky vyžadující přihlášení.
+      window.location.assign('/')
+    } catch {
+      setIsSigningOut(false)
+    }
   }
 
   // Dokud se session načítá, nenabízíme přihlášení ani odhlášení — ať odkaz nepřeskakuje.

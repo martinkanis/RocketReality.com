@@ -181,6 +181,39 @@ export async function archiveListing(
     .where(eq(listings.id, id))
 }
 
+/** Dočasné stažení aktivního inzerátu z výpisů — vrátit ho lze přes resumeListing. */
+export async function pauseListing(id: string): Promise<void> {
+  const db = getDb()
+  const listing = await requireListing(id)
+  if (listing.status !== 'active') {
+    throw new ListingStateError(`Inzerát ve stavu '${listing.status}' nelze pozastavit`)
+  }
+  await db
+    .update(listings)
+    .set({ status: 'paused', statusChangedAt: new Date() })
+    .where(eq(listings.id, id))
+}
+
+/** Návrat pozastaveného inzerátu mezi aktivní. */
+export async function resumeListing(id: string): Promise<void> {
+  const db = getDb()
+  const listing = await requireListing(id)
+  if (listing.status !== 'paused') {
+    throw new ListingStateError(`Inzerát ve stavu '${listing.status}' nelze obnovit`)
+  }
+  await db
+    .update(listings)
+    .set({ status: 'active', statusChangedAt: new Date() })
+    .where(eq(listings.id, id))
+}
+
+/** Soft delete inzerátu administrátorem — řádek zůstává v DB s deletedAt. */
+export async function softDeleteListing(id: string): Promise<void> {
+  const db = getDb()
+  await requireListing(id)
+  await db.update(listings).set({ deletedAt: new Date() }).where(eq(listings.id, id))
+}
+
 /** Zvýšení počítadla zobrazení detailu (bez čekání na statistiky). */
 export async function incrementViewCount(id: string): Promise<void> {
   const db = getDb()
