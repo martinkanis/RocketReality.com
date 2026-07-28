@@ -19,6 +19,7 @@ const REQUEST_EXAMPLE = `curl -X POST ${API_BASE_URL}${IMPORT_ENDPOINT_PATH} \\
     "description": "Prostorný dům s garáží a udržovanou zahradou…",
     "offerType": "sale",
     "propertyType": "house",
+    "disposition": "5+kk",
     "price": 8900000,
     "priceNote": "k jednání",
     "currency": "CZK",
@@ -83,6 +84,13 @@ const FIELD_ROWS: FieldRow[] = [
     type: 'string | null',
     required: 'ne',
     description: 'Druh nemovitosti, např. "apartment", "house", "land", "commercial".',
+  },
+  {
+    name: 'disposition',
+    type: 'string | null',
+    required: 'u bytů',
+    description:
+      'Dispozice bytu, např. "2+1", "3+kk", "pokoj". U kategorie byty je povinná — pokud ji neuvedete, zkusíme ji odvodit z názvu inzerátu.',
   },
   {
     name: 'price',

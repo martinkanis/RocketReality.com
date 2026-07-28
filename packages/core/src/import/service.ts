@@ -9,7 +9,8 @@ import {
   listings,
   municipalities,
 } from '@rocket/db'
-import type { TransactionType } from '@rocket/shared'
+import { CATEGORY_BYTY_ID, DISPOSITIONS } from '@rocket/shared'
+import type { Disposition, TransactionType } from '@rocket/shared'
 import { and, eq, isNotNull, sql } from 'drizzle-orm'
 import { z } from 'zod'
 import { submitListingForReview } from '../listings/service'
@@ -24,6 +25,7 @@ export const importListingSchema = z.object({
   description: z.string().max(20_000).nullish(),
   offerType: z.enum(['sale', 'rent', 'other']),
   propertyType: z.string().max(100).nullish(),
+  disposition: z.enum(DISPOSITIONS).nullish(),
   price: z.number().int().nonnegative().nullish(),
   priceNote: z.string().max(500).optional(),
   currency: z.literal('CZK'),
@@ -82,6 +84,20 @@ const CATEGORY_BY_PROPERTY_TYPE: Record<string, number> = {
 const CATEGORY_OSTATNI = 5
 
 /**
+ * Dispozice bytu — explicitní z požadavku, jinak z názvu („Prodej bytu 2+1 …").
+ * Delší varianty se zkouší první, aby „3+kk" nepřebilo „3+1".
+ */
+function resolveDisposition(input: ImportListingInput): Disposition | null {
+  if (input.disposition) return input.disposition
+  const haystack = input.title.toLowerCase().replaceAll(' ', '')
+  return (
+    [...DISPOSITIONS]
+      .sort((a, b) => b.length - a.length)
+      .find((candidate) => haystack.includes(candidate)) ?? null
+  )
+}
+
+/**
  * Najde obec podle názvu (bez diakritiky, case-insensitive); kraj z location.region
  * použije k rozlišení stejnojmenných obcí. Vrací i odvozený okres a souřadnice.
  */
@@ -119,11 +135,19 @@ function listingValuesFromInput(
   resolved: Awaited<ReturnType<typeof resolveMunicipality>>,
 ) {
   const categoryKey = input.propertyType?.trim().toLowerCase() ?? ''
+  const categoryMainId = CATEGORY_BY_PROPERTY_TYPE[categoryKey] ?? CATEGORY_OSTATNI
+  const disposition = resolveDisposition(input)
+  if (categoryMainId === CATEGORY_BYTY_ID && !disposition) {
+    throw new ImportValidationError(
+      'U bytu je potřeba dispozice — pošlete pole "disposition" (např. "2+1") nebo ji uveďte v názvu',
+    )
+  }
   return {
     title: input.title,
     description: input.description ?? '',
     transaction: TRANSACTION_BY_OFFER_TYPE[input.offerType],
-    categoryMainId: CATEGORY_BY_PROPERTY_TYPE[categoryKey] ?? CATEGORY_OSTATNI,
+    categoryMainId,
+    disposition,
     priceAmount: input.price ?? null,
     priceHidden: input.price == null,
     priceNote: input.priceNote ?? null,
