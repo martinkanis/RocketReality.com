@@ -6,6 +6,7 @@ import { useState, type FormEvent } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { PasswordInput } from '@/components/ui/password-input'
 import { Label } from '@/components/ui/label'
 import { authClient } from '@/lib/auth-client'
 import { formString } from '@/lib/form'
@@ -50,10 +51,9 @@ export function LoginForm() {
           </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="password">Heslo</Label>
-            <Input
+            <PasswordInput
               id="password"
               name="password"
-              type="password"
               autoComplete="current-password"
               required
             />

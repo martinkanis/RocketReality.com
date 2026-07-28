@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from 'react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { PasswordInput } from '@/components/ui/password-input'
 import { Label } from '@/components/ui/label'
 import { authClient } from '@/lib/auth-client'
 
@@ -59,30 +59,27 @@ export function ChangePasswordForm() {
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="current-password">Současné heslo</Label>
-        <Input
+        <PasswordInput
           id="current-password"
           name="currentPassword"
-          type="password"
           autoComplete="current-password"
           required
         />
       </div>
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="new-password">Nové heslo</Label>
-        <Input
+        <PasswordInput
           id="new-password"
           name="newPassword"
-          type="password"
           autoComplete="new-password"
           required
         />
       </div>
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="new-password-confirm">Nové heslo znovu</Label>
-        <Input
+        <PasswordInput
           id="new-password-confirm"
           name="newPasswordConfirm"
-          type="password"
           autoComplete="new-password"
           required
         />
