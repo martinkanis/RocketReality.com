@@ -2,10 +2,13 @@ import { getDb, listings, users } from '@rocket/db'
 import { ACCOUNT_TYPE_LABELS } from '@rocket/shared'
 import { desc, eq, sql } from 'drizzle-orm'
 import { Badge } from '@/components/ui/badge'
+import { UserManageDialog } from '@/features/admin/user-manage-dialog'
+import { requireSuperadmin } from '@/lib/require-user'
 
 export const metadata = { title: 'Uživatelé' }
 
 export default async function AdminUsersPage() {
+  const admin = await requireSuperadmin()
   const db = getDb()
   const rows = await db
     .select({
@@ -38,6 +41,7 @@ export default async function AdminUsersPage() {
               <th className="px-4 py-3">Stav</th>
               <th className="px-4 py-3">Inzerátů</th>
               <th className="px-4 py-3">Registrace</th>
+              <th className="px-4 py-3">Akce</th>
             </tr>
           </thead>
           <tbody>
@@ -66,6 +70,18 @@ export default async function AdminUsersPage() {
                 </td>
                 <td className="px-4 py-3">{row.listingCount}</td>
                 <td className="px-4 py-3">{row.createdAt.toLocaleDateString('cs-CZ')}</td>
+                <td className="px-4 py-3">
+                  <UserManageDialog
+                    user={{
+                      id: row.id,
+                      name: row.name,
+                      email: row.email,
+                      role: row.role ?? 'user',
+                      banned: row.banned ?? false,
+                    }}
+                    isSelf={row.id === admin.id}
+                  />
+                </td>
               </tr>
             ))}
           </tbody>
