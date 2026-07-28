@@ -1,3 +1,4 @@
+export * from './agencies/ares'
 export * from './billing/payment-provider'
 export * from './billing/orders'
 export * from './import/service'

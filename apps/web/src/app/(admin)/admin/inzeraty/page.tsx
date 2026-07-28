@@ -15,8 +15,7 @@ export const metadata = { title: 'Inzeráty' }
 
 const PAGE_SIZE = 50
 
-const OWNER_TYPES = ['soukromy', 'kancelar'] as const
-type OwnerType = (typeof OWNER_TYPES)[number]
+type OwnerType = 'soukromy' | 'kancelar'
 
 interface AdminListingsPageProps {
   searchParams: Promise<{

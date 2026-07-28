@@ -21,7 +21,7 @@ export function LoginForm() {
     setError(null)
     setIsSubmitting(true)
     const formData = new FormData(event.currentTarget)
-    const { error: signInError } = await authClient.signIn.email({
+    const { data, error: signInError } = await authClient.signIn.email({
       email: formString(formData, 'email'),
       password: formString(formData, 'password'),
     })
@@ -34,7 +34,7 @@ export function LoginForm() {
       )
       return
     }
-    router.push('/muj-ucet')
+    router.push(data.user.role === 'admin' ? '/admin' : '/muj-ucet')
     router.refresh()
   }
 
