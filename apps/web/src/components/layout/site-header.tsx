@@ -2,10 +2,12 @@
 
 import { Menu, X } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
 import { BrandSymbol } from '@/components/layout/brand-symbol'
 import { Button } from '@/components/ui/button'
+import { authClient } from '@/lib/auth-client'
 
 const NAV_ITEMS = [
   { href: '/prodej/byty', label: 'Prodej' },
@@ -14,6 +16,8 @@ const NAV_ITEMS = [
   { href: '/mapa', label: 'Mapa' },
   { href: '/realitni-kancelare', label: 'Realitní kanceláře' },
 ] as const
+
+const LINK_CLASS = 'text-sm font-medium transition-colors hover:text-brand-700'
 
 function Logo() {
   return (
@@ -24,6 +28,50 @@ function Logo() {
         <span className="text-brand-700">Nemovitosti</span>
       </span>
     </Link>
+  )
+}
+
+/** Odkazy vpravo v hlavičce podle stavu přihlášení. */
+function AccountLinks({ onNavigate }: { onNavigate?: () => void }) {
+  const router = useRouter()
+  const { data: session, isPending } = authClient.useSession()
+  const [isSigningOut, setIsSigningOut] = useState(false)
+
+  async function handleSignOut() {
+    setIsSigningOut(true)
+    await authClient.signOut()
+    onNavigate?.()
+    router.push('/')
+    router.refresh()
+  }
+
+  // Dokud se session načítá, nenabízíme přihlášení ani odhlášení — ať odkaz nepřeskakuje.
+  if (isPending) return null
+
+  if (!session) {
+    return (
+      <Link href="/prihlaseni" onClick={onNavigate} className={LINK_CLASS}>
+        Přihlásit se
+      </Link>
+    )
+  }
+
+  const isAdmin = session.user.role === 'admin'
+
+  return (
+    <>
+      <Link href={isAdmin ? '/admin' : '/muj-ucet'} onClick={onNavigate} className={LINK_CLASS}>
+        {isAdmin ? 'Administrace' : 'Můj účet'}
+      </Link>
+      <button
+        type="button"
+        onClick={handleSignOut}
+        disabled={isSigningOut}
+        className={`${LINK_CLASS} text-left disabled:opacity-50`}
+      >
+        {isSigningOut ? 'Odhlašuji…' : 'Odhlásit se'}
+      </button>
+    </>
   )
 }
 
@@ -38,22 +86,13 @@ export function SiteHeader() {
         <Logo />
         <nav className="hidden items-center gap-6 lg:flex" aria-label="Hlavní navigace">
           {NAV_ITEMS.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="text-sm font-medium transition-colors hover:text-brand-700"
-            >
+            <Link key={item.href} href={item.href} className={LINK_CLASS}>
               {item.label}
             </Link>
           ))}
         </nav>
         <div className="hidden items-center gap-4 lg:flex">
-          <Link
-            href="/prihlaseni"
-            className="text-sm font-medium transition-colors hover:text-brand-700"
-          >
-            Přihlásit se
-          </Link>
+          <AccountLinks />
           <Button asChild variant="accent" className="rounded-sm">
             <Link href="/vlozit-inzerat">Vložit inzerát zdarma</Link>
           </Button>
@@ -83,9 +122,7 @@ export function SiteHeader() {
               {item.label}
             </Link>
           ))}
-          <Link href="/prihlaseni" onClick={closeMenu} className="text-sm font-medium">
-            Přihlásit se
-          </Link>
+          <AccountLinks onNavigate={closeMenu} />
           <Button asChild variant="accent" className="rounded-sm">
             <Link href="/vlozit-inzerat" onClick={closeMenu}>
               Vložit inzerát zdarma
