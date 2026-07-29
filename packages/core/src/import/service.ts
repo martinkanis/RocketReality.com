@@ -301,7 +301,9 @@ async function syncImportedPhotos(listingId: string, photos: ImportListingInput[
 /**
  * Upsert inzerátu z importního API podle (feed, externalId). Nový inzerát jde
  * standardní cestou koncept → objednávka publikace → moderace; aktualizace
- * existujícího jen propíše pole a stav nemění.
+ * existujícího jen propíše pole a stav nemění — s výjimkou smazaného inzerátu
+ * (např. po omylem kliknutém "Smazat" v administraci), který se opětovným
+ * importem vrátí zpět jako koncept a projde moderací znovu.
  */
 export async function importListing(
   feed: ImportFeedIdentity,
@@ -312,16 +314,20 @@ export async function importListing(
   const values = listingValuesFromInput(input, resolved)
 
   const [existing] = await db
-    .select({ id: listings.id, status: listings.status })
+    .select({ id: listings.id, status: listings.status, deletedAt: listings.deletedAt })
     .from(listings)
     .where(and(eq(listings.importFeedId, feed.id), eq(listings.externalId, input.externalId)))
     .limit(1)
 
   let result: ImportResult
   if (existing) {
-    await db.update(listings).set(values).where(eq(listings.id, existing.id))
+    const isRevival = existing.deletedAt !== null
+    await db
+      .update(listings)
+      .set(isRevival ? { ...values, deletedAt: null, status: 'draft' } : values)
+      .where(eq(listings.id, existing.id))
     await syncImportedPhotos(existing.id, input.photos)
-    if (existing.status === 'draft' || existing.status === 'rejected') {
+    if (isRevival || existing.status === 'draft' || existing.status === 'rejected') {
       await submitListingForReview(existing.id, loadEnv().APP_URL)
     }
     result = { action: 'update', listingId: existing.id }
