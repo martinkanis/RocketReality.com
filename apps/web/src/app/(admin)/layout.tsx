@@ -7,6 +7,7 @@ const NAV_ITEMS = [
   { href: '/admin/moderace', label: 'Moderace' },
   { href: '/admin/odmeny', label: 'Odměny' },
   { href: '/admin/inzeraty', label: 'Inzeráty' },
+  { href: '/admin/importy', label: 'Importy' },
   { href: '/admin/uzivatele', label: 'Uživatelé' },
   { href: '/admin/kancelare', label: 'Kanceláře' },
 ]

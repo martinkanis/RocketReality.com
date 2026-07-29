@@ -9,7 +9,10 @@ import {
   users,
 } from '@rocket/db'
 import { CATEGORIES_MAIN, LISTING_STATUS_LABELS, type ListingStatus } from '@rocket/shared'
-import { desc, eq, gte, sql } from 'drizzle-orm'
+import { and, desc, eq, gte, isNull, sql } from 'drizzle-orm'
+
+/** Smazané inzeráty (soft delete) se do statistik nepočítají — výpisy je také skrývají. */
+const notDeleted = isNull(listings.deletedAt)
 
 const TREND_DAYS = 30
 const RECENT_DAYS = 7
@@ -36,6 +39,7 @@ export async function getPortalStats(): Promise<PortalStats> {
       recent: sql<number>`count(*) FILTER (WHERE ${listings.createdAt} >= ${recentSince})::int`,
     })
     .from(listings)
+    .where(notDeleted)
   const [userCounts] = await db
     .select({
       total: sql<number>`count(*)::int`,
@@ -84,7 +88,7 @@ export async function getDailyTrends(): Promise<{
       count: sql<number>`count(*)::int`,
     })
     .from(listings)
-    .where(gte(listings.createdAt, since))
+    .where(and(notDeleted, gte(listings.createdAt, since)))
     .groupBy(sql`1`)
   const userRows = await db
     .select({
@@ -115,11 +119,13 @@ export async function getListingBreakdowns(): Promise<{
   const statusRows = await db
     .select({ status: listings.status, count: sql<number>`count(*)::int` })
     .from(listings)
+    .where(notDeleted)
     .groupBy(listings.status)
     .orderBy(desc(sql`count(*)`))
   const categoryRows = await db
     .select({ categoryMainId: listings.categoryMainId, count: sql<number>`count(*)::int` })
     .from(listings)
+    .where(notDeleted)
     .groupBy(listings.categoryMainId)
     .orderBy(desc(sql`count(*)`))
 
@@ -169,6 +175,7 @@ export async function getTopListingsByViews(limit: number): Promise<TopListingRo
     .from(listings)
     .innerJoin(users, eq(listings.ownerUserId, users.id))
     .leftJoin(agencies, eq(listings.agencyId, agencies.id))
+    .where(notDeleted)
     .orderBy(desc(listings.viewCount))
     .limit(limit)
 }
@@ -194,12 +201,12 @@ export async function getAgencyStats(agencyId: string): Promise<AgencyStats> {
       views: sql<number>`coalesce(sum(${listings.viewCount}), 0)::int`,
     })
     .from(listings)
-    .where(eq(listings.agencyId, agencyId))
+    .where(and(notDeleted, eq(listings.agencyId, agencyId)))
   const [inquiryRow] = await db
     .select({ count: sql<number>`count(*)::int` })
     .from(contactMessages)
     .innerJoin(listings, eq(contactMessages.listingId, listings.id))
-    .where(eq(listings.agencyId, agencyId))
+    .where(and(notDeleted, eq(listings.agencyId, agencyId)))
 
   return {
     memberCount: memberRow?.count ?? 0,
