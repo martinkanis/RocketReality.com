@@ -97,13 +97,12 @@ export default async function AdminImportsPage() {
                   <td className="py-2 pr-4 whitespace-nowrap">{formatDateTime(row.createdAt)}</td>
                   <td className="py-2 pr-4">
                     {row.listingSlug ? (
+                      // Admin vidí přes /detail i neveřejné (koncept, smazaný…) inzeráty.
                       <Link className="underline" href={`/detail/${row.listingSlug}`}>
                         {row.listingTitle}
                       </Link>
                     ) : (
-                      <span className="text-muted-foreground">
-                        {row.status === 'error' ? 'Nepřijato' : 'Inzerát smazán'}
-                      </span>
+                      <span className="text-muted-foreground">Nepřijato</span>
                     )}
                     {row.status === 'error' && row.errors ? (
                       <p className="mt-1 text-xs text-muted-foreground">

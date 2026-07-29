@@ -9,7 +9,7 @@ import {
   users,
 } from '@rocket/db'
 import { CATEGORY_MAIN_BY_ID } from '@rocket/shared'
-import { and, asc, eq, isNull } from 'drizzle-orm'
+import { and, asc, eq } from 'drizzle-orm'
 import { cache } from 'react'
 
 export type ListingRow = typeof listings.$inferSelect
@@ -31,7 +31,11 @@ export interface ListingDetail {
   media: ListingMediaRow[]
 }
 
-/** Detail inzerátu podle slugu včetně lokality, inzerenta a fotografií. */
+/**
+ * Detail inzerátu podle slugu včetně lokality, inzerenta a fotografií.
+ * Vrací i smazané a jinak neveřejné inzeráty — o tom, kdo smí co vidět,
+ * rozhoduje volající (vlastník náhledu konceptu, admin vidí vše).
+ */
 export const getListingDetailBySlug = cache(async (slug: string): Promise<ListingDetail | null> => {
   const db = getDb()
   const [row] = await db
@@ -50,7 +54,7 @@ export const getListingDetailBySlug = cache(async (slug: string): Promise<Listin
     .innerJoin(districts, eq(listings.districtId, districts.id))
     .innerJoin(users, eq(listings.ownerUserId, users.id))
     .leftJoin(agencies, eq(listings.agencyId, agencies.id))
-    .where(and(eq(listings.slug, slug), isNull(listings.deletedAt)))
+    .where(eq(listings.slug, slug))
     .limit(1)
   if (!row) return null
 

@@ -70,6 +70,7 @@ interface ListingDetailPageProps {
 const priceLineFormatter = new Intl.NumberFormat('cs-CZ', { maximumFractionDigits: 0 })
 
 function isPubliclyVisible(listing: ListingRow): boolean {
+  if (listing.deletedAt) return false
   return (
     PUBLICLY_VISIBLE_STATUSES.some((status) => status === listing.status) ||
     isPubliclyArchived(listing)
@@ -121,16 +122,25 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
   const { listing } = detail
 
   let isOwnerPreview = false
+  let isAdminPreview = false
   if (!isPubliclyVisible(listing)) {
     const user = await getSessionUser()
-    if (!user || user.id !== listing.ownerUserId) notFound()
-    isOwnerPreview = true
+    if (user?.id === listing.ownerUserId) {
+      isOwnerPreview = true
+    } else if (user?.isSuperadmin) {
+      // Admin potřebuje dohledat i koncept, smazaný nebo jinak neveřejný inzerát
+      // (např. proklikem z historie importů) — bez možnosti ho odsud kontaktovat.
+      isAdminPreview = true
+    } else {
+      notFound()
+    }
   }
+  const isPreview = isOwnerPreview || isAdminPreview
 
-  const isArchived = !isOwnerPreview && isPubliclyArchived(listing)
+  const isArchived = !isPreview && isPubliclyArchived(listing)
 
   // Id návštěvy zná jen tento render — klient jím po odchodu doplní délku návštěvy.
-  const viewId = isOwnerPreview ? null : crypto.randomUUID()
+  const viewId = isPreview ? null : crypto.randomUUID()
 
   if (viewId) {
     // Fire-and-forget — statistiky nesmí zdržet ani shodit render.
@@ -231,6 +241,12 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
           dostupný.
         </div>
       )}
+      {isAdminPreview && (
+        <div className="mt-4 rounded-md bg-info-bg px-4 py-3 text-sm font-medium text-info">
+          Admin náhled — stav: {LISTING_STATUS_LABELS[listing.status]}
+          {listing.deletedAt ? ' (smazán)' : ''}. Inzerát není veřejně dostupný.
+        </div>
+      )}
       <div className="mt-4 grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
         <div className="flex min-w-0 flex-col gap-8">
           {galleryImages.length > 0 ? (
@@ -302,7 +318,13 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
           </section>
         </div>
         <aside className="flex flex-col gap-6 print:hidden">
-          {isArchived ? <ArchivedNotice listing={listing} /> : <AdvertiserCard detail={detail} />}
+          {isArchived ? (
+            <ArchivedNotice listing={listing} />
+          ) : isAdminPreview ? (
+            <AdminPreviewNotice listing={listing} />
+          ) : (
+            <AdvertiserCard detail={detail} />
+          )}
           {showMortgageCalculator && listing.priceAmount !== null && (
             <Card>
               <CardHeader>
@@ -354,6 +376,29 @@ function ArchivedNotice({ listing }: { listing: ListingRow }) {
         </Link>
         <Link href="/prodej/byty" className="font-medium text-brand-500 hover:text-primary">
           Prohlédnout aktuální nabídku
+        </Link>
+      </CardContent>
+    </Card>
+  )
+}
+
+/** Admin náhled neveřejného inzerátu (koncept, smazaný…) — bez kontaktu na inzerenta. */
+function AdminPreviewNotice({ listing }: { listing: ListingRow }) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Admin náhled</CardTitle>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-3 text-sm">
+        <p className="leading-relaxed text-muted-foreground">
+          Kontaktní formulář je v náhledu skrytý. Schválení, pozastavení nebo smazání inzerátu
+          proveďte v administraci.
+        </p>
+        <Link
+          href={`/admin/inzeraty?hledat=${encodeURIComponent(listing.title)}`}
+          className="font-medium text-brand-500 hover:text-primary"
+        >
+          Spravovat v administraci
         </Link>
       </CardContent>
     </Card>
