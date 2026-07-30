@@ -186,11 +186,17 @@ export const listingMedia = pgTable(
     listingId: uuid()
       .notNull()
       .references(() => listings.id, { onDelete: 'cascade' }),
+    /** Číselné id fotky pro importní XML-RPC rozhraní, které UUID neumí. */
+    seq: bigint({ mode: 'number' }).notNull().generatedAlwaysAsIdentity(),
     kind: mediaKindEnum().notNull().default('foto'),
     position: smallint().notNull().default(0),
     storageKey: text().notNull(),
     /** Zdrojová URL u importovaných fotek — worker je stáhne do storageKey. */
     sourceUrl: text(),
+    /** Identifikátor fotky u kanceláře (photo_rkid) při importu přes XML-RPC. */
+    externalId: text(),
+    /** Otisk obsahu — brání opakovanému vložení téže fotky při každé synchronizaci. */
+    contentHash: text(),
     alt: text(),
     mime: text(),
     fileSize: integer(),
@@ -201,7 +207,10 @@ export const listingMedia = pgTable(
     isReady: boolean().notNull().default(false),
     createdAt: createdAt(),
   },
-  (table) => [index().on(table.listingId, table.kind, table.position)],
+  (table) => [
+    index().on(table.listingId, table.kind, table.position),
+    index('listing_media_content_hash').on(table.listingId, table.contentHash),
+  ],
 )
 
 /** Historie cen — plní ji trigger při publikaci a každé změně ceny (neobejde ho ani import). */

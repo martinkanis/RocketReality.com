@@ -1,7 +1,15 @@
+import { loadEnv } from '@rocket/config'
 import { getDb, importFeeds, importSessions, listings } from '@rocket/db'
 import { and, eq, isNull } from 'drizzle-orm'
 import { importListing, ImportValidationError, type ImportFeedIdentity } from '../service'
 import { AdvertMappingError, mapAdvertToImportInput, type SrealityAdvert } from './advert-mapping'
+import {
+  handleAddPhoto,
+  handleDelPhoto,
+  handleListPhoto,
+  type ImportPhotoStoragePort,
+} from './photo-methods'
+import { RpcStatusError, STATUS, ok, type RpcResponse } from './rpc-status'
 import {
   SESSION_IDLE_TIMEOUT_MS,
   createSessionId,
@@ -10,38 +18,10 @@ import {
 } from './session'
 import type { XmlRpcMethodCall, XmlRpcValue } from './xml-rpc'
 
-/** Návratové kódy importního rozhraní — významy odpovídají HTTP konvenci (2xx = OK). */
-const STATUS = {
-  ok: 200,
-  unknownClient: 402,
-  badSession: 407,
-  incompleteData: 452,
-} as const
-
 const INTERFACE_VERSION = '3.0.0'
 
-/** Chyba nesoucí návratový kód rozhraní; dispatcher ji převede na odpověď. */
-class RpcStatusError extends Error {
-  constructor(
-    readonly status: number,
-    message: string,
-  ) {
-    super(message)
-  }
-}
-
-/**
- * Odpověď rozhraní. Záměrně type alias, ne interface — jen tak je typ
- * přiřaditelný do XmlRpcValue při serializaci.
- */
-export type RpcResponse = {
-  status: number
-  statusMessage: string
-  output: XmlRpcValue
-}
-
-function ok(output: XmlRpcValue = {}): RpcResponse {
-  return { status: STATUS.ok, statusMessage: 'OK', output }
+export interface ImportRpcDependencies {
+  photoStorage: ImportPhotoStoragePort
 }
 
 function requireString(params: XmlRpcValue[], index: number, name: string): string {
@@ -52,17 +32,32 @@ function requireString(params: XmlRpcValue[], index: number, name: string): stri
   return value
 }
 
-function requireStruct(params: XmlRpcValue[], index: number, name: string): SrealityAdvert {
+function readStruct(
+  params: XmlRpcValue[],
+  index: number,
+  name: string,
+): Record<string, XmlRpcValue> {
   const value = params[index]
   if (
     typeof value !== 'object' ||
     value === null ||
     Array.isArray(value) ||
-    value instanceof Date
+    value instanceof Date ||
+    Buffer.isBuffer(value)
   ) {
     throw new RpcStatusError(STATUS.incompleteData, `Chybí struktura ${name}`)
   }
-  return value as SrealityAdvert
+  return value as Record<string, XmlRpcValue>
+}
+
+function readOptionalInt(params: XmlRpcValue[], index: number): number {
+  const value = params[index]
+  return typeof value === 'number' ? value : 0
+}
+
+function readOptionalText(params: XmlRpcValue[], index: number): string {
+  const value = params[index]
+  return typeof value === 'string' ? value.trim() : ''
 }
 
 interface ResolvedSession {
@@ -127,6 +122,36 @@ async function resolveSession(
   }
 }
 
+/** Dohledá inzerát kanálu podle čísla inzerátu nebo identifikátoru kanceláře. */
+async function findListing(
+  feedId: string,
+  advertId: number,
+  advertRkid: string,
+): Promise<{ id: string } | undefined> {
+  const [listing] = await getDb()
+    .select({ id: listings.id })
+    .from(listings)
+    .where(
+      and(
+        eq(listings.importFeedId, feedId),
+        isNull(listings.deletedAt),
+        advertRkid ? eq(listings.externalId, advertRkid) : eq(listings.seq, advertId),
+      ),
+    )
+    .limit(1)
+  return listing
+}
+
+async function requireListing(
+  feedId: string,
+  advertId: number,
+  advertRkid: string,
+): Promise<{ id: string }> {
+  const listing = await findListing(feedId, advertId, advertRkid)
+  if (!listing) throw new RpcStatusError(STATUS.notFound, 'Inzerát neexistuje')
+  return listing
+}
+
 /** getHash — zahájení relace; klient se identifikuje číselným client_id. */
 async function handleGetHash(params: XmlRpcValue[]): Promise<RpcResponse> {
   const clientId =
@@ -182,7 +207,7 @@ function readAdvertRkid(advert: SrealityAdvert): string {
 
 async function handleAddAdvert(params: XmlRpcValue[]): Promise<RpcResponse> {
   const session = await resolveSession(requireString(params, 0, 'session_id'), true)
-  const advert = requireStruct(params, 1, 'advert_data')
+  const advert = readStruct(params, 1, 'advert_data')
   const externalId = readAdvertRkid(advert)
 
   const result = await importListing(session.feed, mapAdvertToImportInput(advert, externalId))
@@ -202,47 +227,84 @@ async function handleAddAdvert(params: XmlRpcValue[]): Promise<RpcResponse> {
  */
 async function handleDelAdvert(params: XmlRpcValue[]): Promise<RpcResponse> {
   const session = await resolveSession(requireString(params, 0, 'session_id'), true)
-  const advertRkid = typeof params[2] === 'string' ? params[2].trim() : ''
-  const advertId = typeof params[1] === 'number' ? params[1] : 0
-
-  const db = getDb()
-  const [listing] = await db
-    .select({ id: listings.id })
-    .from(listings)
-    .where(
-      and(
-        eq(listings.importFeedId, session.feed.id),
-        isNull(listings.deletedAt),
-        advertRkid ? eq(listings.externalId, advertRkid) : eq(listings.seq, advertId),
-      ),
-    )
-    .limit(1)
-
+  const listing = await findListing(
+    session.feed.id,
+    readOptionalInt(params, 1),
+    readOptionalText(params, 2),
+  )
   // Neexistující inzerát není chyba — protokol na opakované smazání vrací OK.
   if (!listing) return ok()
 
-  await db.update(listings).set({ deletedAt: new Date() }).where(eq(listings.id, listing.id))
+  await getDb().update(listings).set({ deletedAt: new Date() }).where(eq(listings.id, listing.id))
   return ok()
 }
 
-/** listAdvert — přehled inzerátů kanálu, aby si exportní software mohl porovnat stav. */
+/** listAdvert — přehled inzerátů kanálu, aby si exportní software porovnal stav. */
 async function handleListAdvert(params: XmlRpcValue[]): Promise<RpcResponse> {
   const session = await resolveSession(requireString(params, 0, 'session_id'), true)
   const rows = await getDb()
-    .select({ seq: listings.seq, externalId: listings.externalId, status: listings.status })
+    .select({
+      seq: listings.seq,
+      externalId: listings.externalId,
+      slug: listings.slug,
+      categoryMainId: listings.categoryMainId,
+      status: listings.status,
+      updatedAt: listings.updatedAt,
+    })
     .from(listings)
     .where(and(eq(listings.importFeedId, session.feed.id), isNull(listings.deletedAt)))
+    .orderBy(listings.seq)
 
+  const appUrl = loadEnv().APP_URL
   return ok(
     rows.map((row) => ({
       advert_id: row.seq,
       advert_rkid: row.externalId ?? '',
-      status: row.status,
+      advert_url: `${appUrl}/detail/${row.slug}`,
+      advert_type: row.categoryMainId,
+      hash_id: row.slug,
+      modified: row.updatedAt.toISOString().slice(0, 10),
+      published: row.status === 'active' ? 1 : 0,
+      published_status: 0,
+      top: 0,
     })),
   )
 }
 
-const HANDLERS: Record<string, (params: XmlRpcValue[]) => Promise<RpcResponse>> = {
+function photoHandlers(
+  storage: ImportPhotoStoragePort,
+): Record<string, (params: XmlRpcValue[]) => Promise<RpcResponse>> {
+  return {
+    addPhoto: async (params) => {
+      const session = await resolveSession(requireString(params, 0, 'session_id'), true)
+      const listing = await requireListing(
+        session.feed.id,
+        readOptionalInt(params, 1),
+        readOptionalText(params, 2),
+      )
+      return handleAddPhoto(listing.id, readStruct(params, 3, 'data'), storage)
+    },
+    delPhoto: async (params) => {
+      const session = await resolveSession(requireString(params, 0, 'session_id'), true)
+      return handleDelPhoto(
+        session.feed.id,
+        readOptionalInt(params, 1),
+        readOptionalText(params, 2),
+      )
+    },
+    listPhoto: async (params) => {
+      const session = await resolveSession(requireString(params, 0, 'session_id'), true)
+      const listing = await requireListing(
+        session.feed.id,
+        readOptionalInt(params, 1),
+        readOptionalText(params, 2),
+      )
+      return handleListPhoto(listing.id)
+    },
+  }
+}
+
+const ADVERT_HANDLERS: Record<string, (params: XmlRpcValue[]) => Promise<RpcResponse>> = {
   getHash: handleGetHash,
   login: handleLogin,
   logout: handleLogout,
@@ -258,12 +320,16 @@ export class UnknownRpcMethodError extends Error {}
  * návratovým kódem ve struktuře odpovědi, ne XML-RPC faultem — fault je
  * vyhrazený pro chyby protokolu.
  */
-export async function handleImportRpcCall(call: XmlRpcMethodCall): Promise<RpcResponse> {
+export async function handleImportRpcCall(
+  call: XmlRpcMethodCall,
+  dependencies: ImportRpcDependencies,
+): Promise<RpcResponse> {
   if (call.methodName === 'version') {
     return ok({ version: INTERFACE_VERSION })
   }
 
-  const handler = HANDLERS[call.methodName]
+  const handler =
+    ADVERT_HANDLERS[call.methodName] ?? photoHandlers(dependencies.photoStorage)[call.methodName]
   if (!handler) throw new UnknownRpcMethodError(`Neznámá metoda ${call.methodName}`)
 
   try {
