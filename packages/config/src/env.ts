@@ -17,11 +17,14 @@ const envSchema = z.object({
 
   S3_ENDPOINT: z.url().default('http://localhost:9100'),
   S3_REGION: z.string().default('us-east-1'),
+  /** MinIO v lokálním vývoji chce bucket v cestě, Garage v produkci v adrese serveru. */
+  S3_FORCE_PATH_STYLE: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((value) => value === 'true'),
   S3_BUCKET: z.string().default('rocketreality'),
   S3_ACCESS_KEY_ID: z.string().default('rocket'),
   S3_SECRET_ACCESS_KEY: z.string().default('rocketreality'),
-  S3_PUBLIC_URL: z.url().default('http://localhost:9100/rocketreality'),
-
   AUTH_SECRET: z.string().min(16).default('dev-secret-change-me-in-production'),
 
   ADMIN_EMAIL: z.email().optional(),

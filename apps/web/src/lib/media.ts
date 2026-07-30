@@ -1,8 +1,14 @@
-import { loadEnv } from '@rocket/config'
-
-/** Veřejná URL objektu ve storage (MinIO v dev, S3/CDN v produkci). */
+/**
+ * Adresa fotky. Míří na vlastní routu, která objekt načte z úložiště
+ * s přihlašovacími údaji — Garage neumí anonymní přístup, takže přímý
+ * odkaz do bucketu by v prohlížeči skončil chybou.
+ */
 export function mediaUrl(storageKey: string): string {
-  return `${loadEnv().S3_PUBLIC_URL}/${storageKey}`
+  const path = storageKey
+    .split('/')
+    .map((segment) => encodeURIComponent(segment))
+    .join('/')
+  return `/api/media/${path}`
 }
 
 interface MediaVariants {

@@ -7,19 +7,19 @@ import { cn } from '@/lib/utils'
 import { createUploadUrl, deletePhoto, registerPhoto, updatePhotoOrder } from '../actions'
 import { MAX_PHOTOS, MAX_PHOTO_SIZE_BYTES } from '../types'
 import type { PhotoItem } from '../types'
+import { mediaUrl } from '@/lib/media'
 
 interface StepPhotosProps {
   listingId: string | null
   photos: PhotoItem[]
   onPhotosChange: Dispatch<SetStateAction<PhotoItem[]>>
-  mediaBaseUrl: string
 }
 
 function reindexPositions(photos: PhotoItem[]): PhotoItem[] {
   return photos.map((photo, index) => ({ ...photo, position: index }))
 }
 
-export function StepPhotos({ listingId, photos, onPhotosChange, mediaBaseUrl }: StepPhotosProps) {
+export function StepPhotos({ listingId, photos, onPhotosChange }: StepPhotosProps) {
   const [uploadingCount, setUploadingCount] = useState(0)
   const [uploadErrors, setUploadErrors] = useState<string[]>([])
 
@@ -170,7 +170,7 @@ export function StepPhotos({ listingId, photos, onPhotosChange, mediaBaseUrl }: 
             <li key={photo.id} className="group relative">
               {/* Nahrané originály — deriváty generuje worker až po uploadu */}
               <img
-                src={`${mediaBaseUrl}/${photo.storageKey}`}
+                src={mediaUrl(photo.storageKey)}
                 alt={`Fotografie ${index + 1}`}
                 className="h-28 w-full rounded-md border border-border object-cover"
               />

@@ -34,7 +34,6 @@ interface ListingWizardProps {
   initialPhotos: PhotoItem[]
   initialStatus: 'draft' | 'rejected' | null
   rejectedReason: string | null
-  mediaBaseUrl: string
 }
 
 /** Klientská validace kroku před pokračováním — definitivní kontrola běží na serveru. */
@@ -83,7 +82,6 @@ export function ListingWizard({
   initialPhotos,
   initialStatus,
   rejectedReason,
-  mediaBaseUrl,
 }: ListingWizardProps) {
   const [step, setStep] = useState(1)
   const [data, setData] = useState<WizardData>(() => initialData ?? createEmptyWizardData())
@@ -200,7 +198,6 @@ export function ListingWizard({
               listingId={listingId}
               photos={photos}
               onPhotosChange={setPhotos}
-              mediaBaseUrl={mediaBaseUrl}
             />
           )}
           {step === LAST_STEP && (

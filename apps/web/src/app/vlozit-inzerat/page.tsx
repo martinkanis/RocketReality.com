@@ -1,4 +1,3 @@
-import { loadEnv } from '@rocket/config'
 import { districts, getDb, listingMedia, listings, municipalities } from '@rocket/db'
 import { and, desc, eq, isNull } from 'drizzle-orm'
 import type { Metadata } from 'next'
@@ -102,7 +101,6 @@ export default async function VlozitInzeratPage({ searchParams }: VlozitInzeratP
         initialPhotos={photos}
         initialStatus={listing ? (listing.status === 'rejected' ? 'rejected' : 'draft') : null}
         rejectedReason={listing?.rejectedReason ?? null}
-        mediaBaseUrl={loadEnv().S3_PUBLIC_URL}
       />
     </div>
   )
