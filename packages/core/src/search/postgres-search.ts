@@ -14,13 +14,7 @@ export class PostgresListingSearch implements ListingSearchPort {
     }
 
     const where = and(...buildSearchConditions(query, categoryMain.id))
-    const toppedFirst = desc(sql`${listings.toppedUntil} > now()`)
-    const orderBy =
-      query.sort === 'nejlevnejsi'
-        ? [toppedFirst, sql`${listings.priceAmount} ASC NULLS LAST`]
-        : query.sort === 'nejdrazsi'
-          ? [toppedFirst, sql`${listings.priceAmount} DESC NULLS LAST`]
-          : [toppedFirst, desc(listings.publishedAt)]
+    const orderBy = buildSearchOrderBy(query)
 
     const coverPhoto = db.$with('cover_photo').as(
       db
@@ -97,6 +91,18 @@ export class PostgresListingSearch implements ListingSearchPort {
       pageSize: query.pageSize,
     }
   }
+}
+
+/** Sestaví ORDER BY pro vyhledávací dotaz; exportováno kvůli testům generovaného SQL. */
+export function buildSearchOrderBy(query: SearchQuery): SQL[] {
+  const toppedFirst = desc(sql`${listings.toppedUntil} > now()`)
+  if (query.sort === 'nejlevnejsi') {
+    return [toppedFirst, sql`${listings.priceAmount} ASC NULLS LAST`]
+  }
+  if (query.sort === 'nejdrazsi') {
+    return [toppedFirst, sql`${listings.priceAmount} DESC NULLS LAST`]
+  }
+  return [toppedFirst, desc(listings.publishedAt)]
 }
 
 /** Sestaví WHERE podmínky pro vyhledávací dotaz; exportováno kvůli testům generovaného SQL. */

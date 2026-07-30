@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { and, type SQL } from 'drizzle-orm'
 import { PgDialect } from 'drizzle-orm/pg-core'
-import { buildSearchConditions } from './postgres-search'
+import { buildSearchConditions, buildSearchOrderBy } from './postgres-search'
 import { searchQuerySchema } from './query'
 
 const dialect = new PgDialect({ casing: 'snake_case' })
@@ -40,5 +40,33 @@ describe('buildSearchConditions — pole-filtry', () => {
       expect(sql).toMatch(new RegExp(`"${column}" in \\(\\$\\d+\\)`))
     }
     expect(params).toEqual(expect.arrayContaining(['osobni', 'cihlova', 'dobry', 'zarizeno']))
+  })
+})
+
+describe('buildSearchOrderBy — řazení podle ceny', () => {
+  function renderOrderBy(sort: string) {
+    const query = searchQuerySchema.parse({ transaction: 'prodej', categoryMain: 'byty', sort })
+    return buildSearchOrderBy(query).map((part) => dialect.sqlToQuery(part).sql)
+  }
+
+  it('nejlevnejsi generuje ASC NULLS LAST, ne NULLS LAST asc', () => {
+    const [, priceOrder] = renderOrderBy('nejlevnejsi')
+
+    expect(priceOrder).toMatch(/"price_amount" ASC NULLS LAST$/)
+    expect(priceOrder).not.toMatch(/NULLS LAST\s+(asc|desc)/i)
+  })
+
+  it('nejdrazsi generuje DESC NULLS LAST, ne NULLS LAST desc', () => {
+    const [, priceOrder] = renderOrderBy('nejdrazsi')
+
+    expect(priceOrder).toMatch(/"price_amount" DESC NULLS LAST$/)
+    expect(priceOrder).not.toMatch(/NULLS LAST\s+(asc|desc)/i)
+  })
+
+  it('výchozí řazení zůstává podle publishedAt sestupně', () => {
+    const [toppedFirst, published] = renderOrderBy('nejnovejsi')
+
+    expect(toppedFirst).toMatch(/"topped_until" > now\(\) desc/)
+    expect(published).toMatch(/"published_at" desc/)
   })
 })
