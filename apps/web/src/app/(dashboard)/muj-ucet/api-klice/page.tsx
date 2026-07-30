@@ -6,9 +6,10 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { deactivateApiKey } from '@/features/api-keys/actions'
 import { CreateApiKeyForm } from '@/features/api-keys/create-api-key-form'
+import { CreateRpcAccessForm } from '@/features/api-keys/create-rpc-access-form'
 import { requireUser } from '@/lib/require-user'
 
-export const metadata = { title: 'API klíče' }
+export const metadata = { title: 'Přístupy pro import' }
 
 export default async function ApiKeysPage() {
   const user = await requireUser()
@@ -17,6 +18,8 @@ export default async function ApiKeysPage() {
     .select({
       id: importFeeds.id,
       label: importFeeds.label,
+      type: importFeeds.type,
+      clientId: importFeeds.clientId,
       isActive: importFeeds.isActive,
       lastRunAt: importFeeds.lastRunAt,
       createdAt: importFeeds.createdAt,
@@ -28,7 +31,32 @@ export default async function ApiKeysPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-heading">API klíče</h1>
+        <h1 className="text-2xl font-semibold text-heading">Přístupy pro import</h1>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          Inzeráty k nám dostanete dvěma způsoby. Pokud váš realitní software umí exportovat na
+          realitní portály, použijte <strong className="text-heading">přístup pro export</strong>{' '}
+          níže — stačí v něm přidat naši adresu a údaje, žádné programování. Pokud si napojení
+          píšete sami, sáhněte po <strong className="text-heading">API klíči</strong>.
+        </p>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Přístup pro váš realitní software</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
+            Vystavujeme rozhraní, které běžné exportní programy už umí. V nastavení exportu zadáte
+            adresu <code className="rounded bg-brand-50 px-1 font-mono">/RPC2</code> na naší doméně,
+            číslo klienta a heslo, které dostanete po zřízení přístupu. Inzeráty i fotky se pak
+            přenášejí automaticky a projdou běžnou moderací.
+          </p>
+          <CreateRpcAccessForm />
+        </CardContent>
+      </Card>
+
+      <div>
+        <h2 className="text-lg font-semibold text-heading">API klíče</h2>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
           Klíčem se autorizuje import inzerátů z realitního softwaru přes{' '}
           <code className="rounded bg-brand-50 px-1 font-mono">POST /api/import/inzeraty</code> —
@@ -51,17 +79,18 @@ export default async function ApiKeysPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Vaše klíče</CardTitle>
+          <CardTitle className="text-base">Vaše přístupy</CardTitle>
         </CardHeader>
         <CardContent>
           {keys.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Zatím nemáte žádný API klíč.</p>
+            <p className="text-sm text-muted-foreground">Zatím nemáte žádný přístup.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border text-left text-xs uppercase text-muted-foreground">
                     <th className="px-4 py-3">Název</th>
+                    <th className="px-4 py-3">Druh</th>
                     <th className="px-4 py-3">Stav</th>
                     <th className="px-4 py-3">Poslední import</th>
                     <th className="px-4 py-3">Vytvořen</th>
@@ -72,6 +101,11 @@ export default async function ApiKeysPage() {
                   {keys.map((key) => (
                     <tr key={key.id} className="border-b border-border last:border-0">
                       <td className="px-4 py-3">{key.label || 'Bez názvu'}</td>
+                      <td className="px-4 py-3 text-muted-foreground">
+                        {key.type === 'xml_rpc'
+                          ? `Export ze softwaru (klient ${key.clientId ?? '—'})`
+                          : 'API klíč'}
+                      </td>
                       <td className="px-4 py-3">
                         {key.isActive ? (
                           <Badge variant="success">Aktivní</Badge>
