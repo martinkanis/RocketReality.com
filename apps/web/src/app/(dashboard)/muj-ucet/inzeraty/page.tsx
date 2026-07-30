@@ -62,10 +62,24 @@ function formatListingPrice(item: MyListingItem): string {
   })
 }
 
+/** Detail zvládne zobrazit i neveřejný inzerát vlastníka — v moderaci vede na owner náhled. */
+function hasDetailLink(status: ListingStatus): boolean {
+  return status === 'active' || status === 'pending_review'
+}
+
 function ListingRowActions({ item }: { item: MyListingItem }) {
   switch (item.status) {
     case 'draft':
       return <DraftActions listingId={item.id} />
+    case 'pending_review':
+      return (
+        <Button asChild size="sm" variant="outline">
+          <Link href={`/detail/${item.slug}`}>
+            <Eye />
+            Náhled
+          </Link>
+        </Button>
+      )
     case 'active':
       return (
         <ActiveActions
@@ -99,7 +113,7 @@ function ListingRow({ item }: { item: MyListingItem }) {
       )}
 
       <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-        {item.status === 'active' ? (
+        {hasDetailLink(item.status) ? (
           <Link
             href={`/detail/${item.slug}`}
             className="truncate font-medium text-heading transition-colors hover:text-brand-500"
