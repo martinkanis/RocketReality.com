@@ -48,7 +48,10 @@ function getS3Client(): S3Client {
         accessKeyId: env.S3_ACCESS_KEY_ID,
         secretAccessKey: env.S3_SECRET_ACCESS_KEY,
       },
-      forcePathStyle: true,
+      // Garage (úložiště Rock8) očekává bucket v adrese serveru, ne v cestě.
+      // S path-style adresováním požadavek minul S3 API, vrátil se HTML 404
+      // a knihovna ho ohlásila jako nesrozumitelnou chybu parsování XML.
+      forcePathStyle: false,
     })
   }
   return s3Client
