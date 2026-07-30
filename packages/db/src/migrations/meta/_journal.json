@@ -50,6 +50,13 @@
       "when": 1785254241466,
       "tag": "0006_page_views",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1785454274061,
+      "tag": "0007_wooden_mauler",
+      "breakpoints": true
     }
   ]
 }

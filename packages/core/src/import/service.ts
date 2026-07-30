@@ -67,7 +67,7 @@ export const importListingSchema = z.object({
   title: z.string().min(5).max(200),
   sourceUrl: z.url().optional(),
   description: z.string().max(20_000).nullish(),
-  offerType: z.enum(['sale', 'rent', 'other']),
+  offerType: z.enum(['sale', 'rent', 'auction', 'other']),
   propertyType: z.string().max(100).nullish(),
   disposition: z.enum(DISPOSITIONS).nullish(),
   price: z.number().int().nonnegative().nullish(),
@@ -112,6 +112,7 @@ export class ImportValidationError extends Error {}
 const TRANSACTION_BY_OFFER_TYPE: Record<ImportListingInput['offerType'], TransactionType> = {
   sale: 'prodej',
   rent: 'pronajem',
+  auction: 'drazba',
   other: 'prodej',
 }
 

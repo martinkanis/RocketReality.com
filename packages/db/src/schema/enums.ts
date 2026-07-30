@@ -60,7 +60,7 @@ export const notificationTypeEnum = pgEnum('notification_type', NOTIFICATION_TYP
 export const notificationChannelEnum = pgEnum('notification_channel', NOTIFICATION_CHANNELS)
 export const notificationStatusEnum = pgEnum('notification_status', ['queued', 'sent', 'failed'])
 export const listingSourceEnum = pgEnum('listing_source', ['manual', 'import'])
-export const importFeedTypeEnum = pgEnum('import_feed_type', ['api_push', 'xml_feed'])
+export const importFeedTypeEnum = pgEnum('import_feed_type', ['api_push', 'xml_feed', 'xml_rpc'])
 export const importJobStatusEnum = pgEnum('import_job_status', [
   'pending',
   'running',

@@ -86,9 +86,9 @@ const FIELD_ROWS: FieldRow[] = [
   },
   {
     name: 'offerType',
-    type: '"sale" | "rent" | "other"',
+    type: '"sale" | "rent" | "auction" | "other"',
     required: 'ano',
-    description: 'Typ nabídky — prodej, pronájem, jiné.',
+    description: 'Typ nabídky — prodej, pronájem, dražba, jiné.',
   },
   {
     name: 'propertyType',
