@@ -1,4 +1,4 @@
-import { getDb, listings } from '@rocket/db'
+import { listings } from '@rocket/db'
 import { and, eq, isNull } from 'drizzle-orm'
 import type { Metadata } from 'next'
 import Link from 'next/link'
