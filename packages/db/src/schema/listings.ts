@@ -197,6 +197,11 @@ export const listingMedia = pgTable(
     externalId: text(),
     /** Otisk obsahu — brání opakovanému vložení téže fotky při každé synchronizaci. */
     contentHash: text(),
+    /**
+     * Platební QR nalezené ve fotce (SPAYD). Drží se u fotky, protože nárok
+     * na odměnu vzniká až zveřejněním inzerátu, ne nálezem kódu.
+     */
+    paymentQrSpayd: text(),
     alt: text(),
     mime: text(),
     fileSize: integer(),

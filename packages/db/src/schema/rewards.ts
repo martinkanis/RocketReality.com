@@ -10,6 +10,7 @@ import {
 } from 'drizzle-orm/pg-core'
 import { users } from './auth'
 import { createdAt, uuidPrimaryKey } from './helpers'
+import { agencies } from './agencies'
 import { listingMedia, listings } from './listings'
 
 export const rewardPayoutStatusEnum = pgEnum('reward_payout_status', [
@@ -32,6 +33,12 @@ export const rewardPayouts = pgTable(
       .notNull()
       .references(() => listings.id, { onDelete: 'cascade' }),
     mediaId: uuid().references(() => listingMedia.id, { onDelete: 'set null' }),
+    /**
+     * Komu odměna patří. Kancelář má vlastní sazbu i strop, takže se příjemce
+     * drží přímo u výplaty — počítání limitů se pak nemusí prokousávat inzeráty.
+     */
+    beneficiaryUserId: text().references(() => users.id, { onDelete: 'set null' }),
+    beneficiaryAgencyId: uuid().references(() => agencies.id, { onDelete: 'set null' }),
     iban: text().notNull(),
     bic: text(),
     amountCzk: numeric({ precision: 10, scale: 2, mode: 'number' }).notNull(),

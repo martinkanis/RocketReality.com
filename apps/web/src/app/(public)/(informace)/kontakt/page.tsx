@@ -23,8 +23,8 @@ export default function KontaktPage() {
       <section className="mt-8">
         <h2 className="text-xl font-semibold">Spolupráce pro realitní kanceláře</h2>
         <p className="mt-3 leading-relaxed">
-          Chcete na Rocket Nemovitosti inzerovat celé portfolio? Napište nám na obchod@rocketreality.cz a
-          připravíme vám nabídku na míru.
+          Chcete na Rocket Nemovitosti inzerovat celé portfolio? Napište nám na
+          obchod@rocketreality.cz a připravíme vám nabídku na míru.
         </p>
       </section>
       <section className="mt-8">

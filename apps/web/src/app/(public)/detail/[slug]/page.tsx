@@ -231,7 +231,9 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
       {isArchived && (
         <div className="mt-4 rounded-md bg-warning-bg px-4 py-3 text-sm font-medium text-warning">
           Archivní nabídka —{' '}
-          {listing.archiveReason === 'pronajato' ? 'nemovitost je pronajatá' : 'nemovitost je prodaná'}
+          {listing.archiveReason === 'pronajato'
+            ? 'nemovitost je pronajatá'
+            : 'nemovitost je prodaná'}
           . Zobrazujeme ji pro porovnání cen v lokalitě.
         </div>
       )}
@@ -358,8 +360,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
 
 /** Místo kontaktu na inzerenta — u archivované nabídky nemá smysl psát dotaz. */
 function ArchivedNotice({ listing }: { listing: ListingRow }) {
-  const reasonLabel =
-    listing.archiveReason === 'pronajato' ? 'pronajata' : ('prodána' as const)
+  const reasonLabel = listing.archiveReason === 'pronajato' ? 'pronajata' : ('prodána' as const)
   return (
     <Card>
       <CardHeader>
@@ -368,8 +369,8 @@ function ArchivedNotice({ listing }: { listing: ListingRow }) {
       <CardContent className="flex flex-col gap-3 text-sm">
         <p className="leading-relaxed text-muted-foreground">
           Tato nemovitost byla {reasonLabel}
-          {listing.statusChangedAt ? ` ${listing.statusChangedAt.toLocaleDateString('cs-CZ')}` : ''}.
-          Necháváme ji v archivu pro porovnání cen, inzerenta už ale kontaktovat nelze.
+          {listing.statusChangedAt ? ` ${listing.statusChangedAt.toLocaleDateString('cs-CZ')}` : ''}
+          . Necháváme ji v archivu pro porovnání cen, inzerenta už ale kontaktovat nelze.
         </p>
         <Link href="/archiv" className="font-medium text-brand-500 hover:text-primary">
           Další nabídky v archivu

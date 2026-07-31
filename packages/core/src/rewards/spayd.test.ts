@@ -49,9 +49,9 @@ describe('parseSpayd', () => {
 
 describe('buildSpayd', () => {
   it('sestaví SPAYD pro výplatu odměny', () => {
-    expect(buildSpayd({ iban: VALID_IBAN, amountCzk: 25, message: 'Odmena Rocket Nemovitosti' })).toBe(
-      `SPD*1.0*ACC:${VALID_IBAN}*AM:25.00*CC:CZK*MSG:Odmena Rocket Nemovitosti`,
-    )
+    expect(
+      buildSpayd({ iban: VALID_IBAN, amountCzk: 25, message: 'Odmena Rocket Nemovitosti' }),
+    ).toBe(`SPD*1.0*ACC:${VALID_IBAN}*AM:25.00*CC:CZK*MSG:Odmena Rocket Nemovitosti`)
   })
 
   it('odmítne nevalidní IBAN a částku', () => {

@@ -67,7 +67,9 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 }
 
 function Code({ children }: { children: ReactNode }) {
-  return <code className="rounded bg-surface-alt px-1.5 py-0.5 font-mono text-[0.85em]">{children}</code>
+  return (
+    <code className="rounded bg-surface-alt px-1.5 py-0.5 font-mono text-[0.85em]">{children}</code>
+  )
 }
 
 function Step({ number, title, children }: { number: number; title: string; children: ReactNode }) {
@@ -94,8 +96,8 @@ export default function ImportHelpPage() {
 
       <Section title="Proč to takhle je">
         <p>
-          Software realitních kanceláří umí exportovat na realitní portály přes rozhraní, které je
-          v Česku de facto standardem — kancelář ho potřebuje kvůli velkým portálům. Portál proto
+          Software realitních kanceláří umí exportovat na realitní portály přes rozhraní, které je v
+          Česku de facto standardem — kancelář ho potřebuje kvůli velkým portálům. Portál proto
           vystavuje <strong className="text-heading">stejné rozhraní</strong> na adrese{' '}
           <Code>{RPC_PATH}</Code>.
         </p>
@@ -144,8 +146,8 @@ export default function ImportHelpPage() {
         </p>
         <p>
           Opakovaný import téhož inzerátu ho aktualizuje, nevytvoří druhý — inzeráty se párují podle
-          identifikátoru, který kancelář používá u sebe. Smazaný inzerát se opětovným importem
-          vrátí zpět a projde moderací znovu.
+          identifikátoru, který kancelář používá u sebe. Smazaný inzerát se opětovným importem vrátí
+          zpět a projde moderací znovu.
         </p>
         <p>
           Název inzerátu skládáme z parametrů („Prodej bytu 2+kk, 58 m², Brno“), protože rozhraní

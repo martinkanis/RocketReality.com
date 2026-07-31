@@ -1,8 +1,4 @@
-import {
-  REWARD_MAX_ADVERTISERS,
-  REWARD_MAX_LISTINGS_PER_ADVERTISER,
-  REWARD_QR_AMOUNT_CZK,
-} from '@rocket/config'
+import { REWARD_LIMITS } from '@rocket/config'
 import { CATEGORIES_MAIN } from '@rocket/shared'
 import {
   BadgePercent,
@@ -49,7 +45,7 @@ const BENEFITS = [
   {
     icon: HandCoins,
     title: 'Platíme my vám',
-    description: `Žádná procenta z prodeje ani skryté poplatky. Za zveřejněný inzerát s platebním QR kódem ve fotkách vám naopak pošleme ${REWARD_QR_AMOUNT_CZK} Kč — akce platí pro prvních ${REWARD_MAX_ADVERTISERS} inzerentů, až ${REWARD_MAX_LISTINGS_PER_ADVERTISER} inzerátů na inzerenta.`,
+    description: `Žádná procenta z prodeje ani skryté poplatky. Za zveřejněný inzerát s platebním QR kódem ve fotkách vám naopak pošleme ${REWARD_LIMITS.private.amountCzkPerListing} Kč — akce platí pro prvních ${REWARD_LIMITS.private.maxBeneficiaries} inzerentů, až ${REWARD_LIMITS.private.maxRewardedListings} inzerátů na inzerenta. Realitní kanceláře dostanou ${REWARD_LIMITS.agency.amountCzkPerListing} Kč za inzerát až do ${REWARD_LIMITS.agency.maxRewardedListings * REWARD_LIMITS.agency.amountCzkPerListing} Kč.`,
   },
   {
     icon: Sparkles,
@@ -204,9 +200,13 @@ export default function HomePage() {
           Nemovitosti bez přemrštěných cen
         </h1>
         <p className="mx-auto mt-4 max-w-2xl text-base text-brand-100 sm:text-lg">
-          Inzertní server, kde neplatíte vy nám — platíme my vám. Prvních {REWARD_MAX_ADVERTISERS}{' '}
-          inzerentů od nás dostane {REWARD_QR_AMOUNT_CZK} Kč za každý zveřejněný inzerát s platebním
-          QR kódem. Až {REWARD_QR_AMOUNT_CZK * REWARD_MAX_LISTINGS_PER_ADVERTISER} Kč na účet.
+          Inzertní server, kde neplatíte vy nám — platíme my vám. Prvních{' '}
+          {REWARD_LIMITS.private.maxBeneficiaries} inzerentů od nás dostane{' '}
+          {REWARD_LIMITS.private.amountCzkPerListing} Kč za každý zveřejněný inzerát s platebním QR
+          kódem, až{' '}
+          {REWARD_LIMITS.private.amountCzkPerListing * REWARD_LIMITS.private.maxRewardedListings} Kč
+          na účet. Realitní kanceláře až{' '}
+          {REWARD_LIMITS.agency.amountCzkPerListing * REWARD_LIMITS.agency.maxRewardedListings} Kč.
         </p>
       </section>
       <div className="mx-auto -mt-16 w-full max-w-4xl px-4">

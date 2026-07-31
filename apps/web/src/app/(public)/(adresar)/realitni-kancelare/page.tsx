@@ -64,8 +64,8 @@ export default async function AgencyDirectoryPage({ searchParams }: AgencyDirect
     <div>
       <h1 className="text-3xl font-semibold">Realitní kanceláře</h1>
       <p className="mt-4 leading-relaxed">
-        Profily realitních kanceláří inzerujících na Rocket Nemovitosti — s hodnocením klientů a aktuální
-        nabídkou nemovitostí.
+        Profily realitních kanceláří inzerujících na Rocket Nemovitosti — s hodnocením klientů a
+        aktuální nabídkou nemovitostí.
       </p>
 
       <form method="get" className="mt-6 flex gap-2">

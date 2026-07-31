@@ -1,8 +1,8 @@
 import jsQR from 'jsqr'
 import sharp from 'sharp'
-import { REWARD_QR_AMOUNT_CZK } from '@rocket/config'
-import { parseSpayd } from '@rocket/core'
-import { getDb, rewardPayouts, type listingMedia } from '@rocket/db'
+import { parseSpayd, recordRewardForPublishedListing } from '@rocket/core'
+import { getDb, listingMedia } from '@rocket/db'
+import { eq } from 'drizzle-orm'
 import { createLogger } from '../logger'
 
 const QR_SCAN_MAX_WIDTH = 1200
@@ -12,8 +12,9 @@ const logger = createLogger('media.qr')
 type MediaRow = typeof listingMedia.$inferSelect
 
 /**
- * Detekce platebního QR (SPAYD) ve fotce inzerátu. Nález se jen zaznamená
- * jako kandidát odměny — schválení a výplata je vždy na adminovi.
+ * Detekce platebního QR (SPAYD) ve fotce inzerátu. Nález se uloží k fotce;
+ * nárok na odměnu z něj vzniká až zveřejněním inzerátu, takže se tady jen
+ * zkusí založit pro případ, že inzerát už zveřejněný je.
  */
 export async function detectPaymentQr(media: MediaRow, original: Buffer): Promise<void> {
   const decoded = await decodeQr(original)
@@ -25,22 +26,15 @@ export async function detectPaymentQr(media: MediaRow, original: Buffer): Promis
     return
   }
 
-  const db = getDb()
-  await db
-    .insert(rewardPayouts)
-    .values({
-      listingId: media.listingId,
-      mediaId: media.id,
-      iban: payment.iban,
-      bic: payment.bic,
-      amountCzk: REWARD_QR_AMOUNT_CZK,
-      spaydRaw: payment.raw,
-    })
-    .onConflictDoNothing()
+  await getDb()
+    .update(listingMedia)
+    .set({ paymentQrSpayd: payment.raw })
+    .where(eq(listingMedia.id, media.id))
 
+  const outcome = await recordRewardForPublishedListing(media.listingId)
   logger.info(
-    { mediaId: media.id, listingId: media.listingId, iban: payment.iban },
-    'Detekován platební QR kód — kandidát na odměnu zaznamenán',
+    { mediaId: media.id, listingId: media.listingId, iban: payment.iban, outcome },
+    'Detekován platební QR kód',
   )
 }
 

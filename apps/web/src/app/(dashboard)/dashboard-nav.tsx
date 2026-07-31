@@ -1,14 +1,6 @@
 'use client'
 
-import {
-  BarChart3,
-  BellRing,
-  Heart,
-  KeyRound,
-  LayoutDashboard,
-  List,
-  Settings,
-} from 'lucide-react'
+import { BarChart3, BellRing, Heart, KeyRound, LayoutDashboard, List, Settings } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'

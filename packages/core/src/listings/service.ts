@@ -3,6 +3,7 @@ import { boosts, getDb, listings, moderationCases } from '@rocket/db'
 import { buildListingSlug } from '@rocket/shared'
 import { and, eq, sql } from 'drizzle-orm'
 import { placeOrder } from '../billing/orders'
+import { recordRewardForPublishedListing } from '../rewards/payouts'
 
 export class ListingNotFoundError extends Error {
   constructor(id: string) {
@@ -85,6 +86,9 @@ export async function approveListing(id: string, moderatorUserId: string): Promi
       .set({ status: 'approved', moderatorUserId, resolvedAt: now })
       .where(and(eq(moderationCases.listingId, id), eq(moderationCases.status, 'pending')))
   })
+
+  // Nárok na odměnu vzniká až zveřejněním — za zamítnutý inzerát se neplatí.
+  await recordRewardForPublishedListing(id)
 }
 
 export async function rejectListing(

@@ -17,16 +17,23 @@ export const PRODUCT_CODES = {
   top7d: 'top_7d',
 } as const
 
-/** Odměna vyplácená za schválený inzerát s validním platebním QR kódem ve fotkách. */
-export const REWARD_QR_AMOUNT_CZK = 50
-
 /**
- * Podmínky launch akce — odměnu dostává prvních REWARD_MAX_ADVERTISERS
- * inzerentů, každý nejvýše za REWARD_MAX_LISTINGS_PER_ADVERTISER inzerátů.
- * Limity hlídá admin při schvalování výplat, kód je nevynucuje.
+ * Podmínky launch akce. Soukromí inzerenti a realitní kanceláře mají vlastní
+ * sazbu i limity — soukromník přinese pár inzerátů a potřebuje silnější
+ * pobídku, kancelář jich přinese řádově víc, ale je jich méně.
+ *
+ * Limity vynucuje kód při zakládání nároku, ne až admin při výplatě: nárok
+ * vzniká automaticky při zveřejnění, takže bez stropu by hromadný import
+ * vyrobil odměny za statisíce.
  */
-export const REWARD_MAX_ADVERTISERS = 100
-export const REWARD_MAX_LISTINGS_PER_ADVERTISER = 10
+export const REWARD_LIMITS = {
+  /** Soukromý inzerent: 5 × 100 Kč = 500 Kč, pro prvních 1 000 inzerentů. */
+  private: { amountCzkPerListing: 100, maxRewardedListings: 5, maxBeneficiaries: 1_000 },
+  /** Realitní kancelář: 100 × 50 Kč = 5 000 Kč, pro prvních 100 kanceláří. */
+  agency: { amountCzkPerListing: 50, maxRewardedListings: 100, maxBeneficiaries: 100 },
+} as const
+
+export type RewardBeneficiaryKind = keyof typeof REWARD_LIMITS
 
 export const DEFAULT_PRODUCTS: readonly ProductDefinition[] = [
   {

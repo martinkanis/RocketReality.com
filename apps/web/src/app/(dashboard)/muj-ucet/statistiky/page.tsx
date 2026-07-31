@@ -28,9 +28,7 @@ export default async function StatisticsPage() {
     : and(eq(listings.ownerUserId, user.id), isNull(listings.deletedAt))!
 
   const [listingViews, profileViews, dailyListingViews, topListings] = await Promise.all([
-    membership
-      ? getAgencyListingViewSummary(membership.agencyId)
-      : getListingViewSummary(user.id),
+    membership ? getAgencyListingViewSummary(membership.agencyId) : getListingViewSummary(user.id),
     membership ? getAgencyProfileViewSummary(membership.agencyId) : null,
     getDailyViews(listingFilter, true),
     getTopListingViews(listingFilter, TOP_LISTINGS_LIMIT),
@@ -151,9 +149,7 @@ export default async function StatisticsPage() {
                           {row.title}
                         </Link>
                       </td>
-                      <td className="px-4 py-3 text-right">
-                        {row.views.toLocaleString('cs-CZ')}
-                      </td>
+                      <td className="px-4 py-3 text-right">{row.views.toLocaleString('cs-CZ')}</td>
                       <td className="px-4 py-3 text-right">
                         {formatDuration(row.averageDurationSeconds)}
                       </td>

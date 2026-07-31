@@ -10,8 +10,8 @@ export default function PodminkyPage() {
     <article>
       <h1 className="text-3xl font-semibold">Podmínky užití</h1>
       <p className="mt-4 leading-relaxed">
-        Tyto podmínky upravují používání realitního portálu RocketNemovitosti.cz. Vytvořením účtu nebo
-        vložením inzerátu s nimi vyjadřujete souhlas.
+        Tyto podmínky upravují používání realitního portálu RocketNemovitosti.cz. Vytvořením účtu
+        nebo vložením inzerátu s nimi vyjadřujete souhlas.
       </p>
       <section className="mt-8">
         <h2 className="text-xl font-semibold">Inzerce</h2>

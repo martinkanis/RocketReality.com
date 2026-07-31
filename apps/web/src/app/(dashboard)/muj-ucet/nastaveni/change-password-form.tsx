@@ -68,12 +68,7 @@ export function ChangePasswordForm() {
       </div>
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="new-password">Nové heslo</Label>
-        <PasswordInput
-          id="new-password"
-          name="newPassword"
-          autoComplete="new-password"
-          required
-        />
+        <PasswordInput id="new-password" name="newPassword" autoComplete="new-password" required />
       </div>
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="new-password-confirm">Nové heslo znovu</Label>

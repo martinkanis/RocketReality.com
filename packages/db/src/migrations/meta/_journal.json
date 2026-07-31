@@ -64,6 +64,13 @@
       "when": 1785454879902,
       "tag": "0008_common_goliath",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1785525719867,
+      "tag": "0009_flowery_spirit",
+      "breakpoints": true
     }
   ]
 }
