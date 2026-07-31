@@ -7,6 +7,7 @@ export const STATUS = {
   notFound: 404,
   badSession: 407,
   photoTooLarge: 410,
+  photoTooSmall: 412,
   photoOfAnotherAdvert: 450,
   duplicatePhoto: 451,
   incompleteData: 452,

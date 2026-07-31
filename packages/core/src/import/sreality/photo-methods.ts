@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto'
 import { getDb, listingMedia, listings } from '@rocket/db'
 import { and, desc, eq } from 'drizzle-orm'
+import { readImageDimensions } from './image-dimensions'
 import { RpcStatusError, STATUS, ok, type RpcResponse } from './rpc-status'
 import type { XmlRpcValue } from './xml-rpc'
 
@@ -13,6 +14,10 @@ export interface ImportPhotoStoragePort {
 }
 
 const MAX_PHOTO_BYTES = 10 * 1024 * 1024
+
+/** Menší fotka nedá použitelný náhled ani detail — rozhraní ji odmítá. */
+const MIN_PHOTO_WIDTH = 480
+const MIN_PHOTO_HEIGHT = 360
 
 /** Formáty, které protokol u fotek připouští; poznají se podle úvodních bajtů. */
 const IMAGE_SIGNATURES: { mime: string; extension: string; magic: number[] }[] = [
@@ -59,6 +64,21 @@ function readImageBody(data: Record<string, XmlRpcValue>): Buffer {
 }
 
 /**
+ * Rozměry čteme z hlavičky souboru. Když je z ní přečíst nejde, fotku
+ * propustíme — zpracování ve workeru ji stejně ještě otevře.
+ */
+function assertLargeEnough(body: Buffer, mime: string): void {
+  const dimensions = readImageDimensions(body, mime)
+  if (!dimensions) return
+  if (dimensions.width < MIN_PHOTO_WIDTH || dimensions.height < MIN_PHOTO_HEIGHT) {
+    throw new RpcStatusError(
+      STATUS.photoTooSmall,
+      `Fotka je příliš malá (${dimensions.width}×${dimensions.height}), minimum je ${MIN_PHOTO_WIDTH}×${MIN_PHOTO_HEIGHT}`,
+    )
+  }
+}
+
+/**
  * Pořadí fotky: hlavní fotka je první, ostatní jdou za ni. Pozice 0 je
  * vyhrazená hlavní fotce, protože z ní výpis bere náhled inzerátu.
  */
@@ -91,6 +111,7 @@ export async function handleAddPhoto(
 ): Promise<RpcResponse> {
   const body = readImageBody(data)
   const { mime, extension } = detectImageType(body)
+  assertLargeEnough(body, mime)
   const contentHash = createHash('sha256').update(body).digest('hex')
 
   const db = getDb()
