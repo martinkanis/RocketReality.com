@@ -10,6 +10,7 @@ import {
   municipalities,
 } from '@rocket/db'
 import {
+  ADDRESS_VISIBILITIES,
   BUILDING_CONDITIONS,
   BUILDING_TYPES,
   CATEGORY_BYTY_ID,
@@ -79,6 +80,9 @@ export const importListingSchema = z.object({
     city: z.string().min(1).max(200),
     postalCode: z.string().max(10).optional(),
     region: z.string().max(100).optional(),
+    lat: z.number().min(-90).max(90).optional(),
+    lng: z.number().min(-180).max(180).optional(),
+    addressVisibility: z.enum(ADDRESS_VISIBILITIES).optional(),
   }),
   attributes: importAttributesSchema.optional(),
   photos: z
@@ -177,6 +181,36 @@ async function resolveMunicipality(location: ImportListingInput['location']) {
   return match
 }
 
+/**
+ * Hrubé hranice ČR. Souřadnice mimo ně nejčastěji znamenají prohozenou
+ * zeměpisnou šířku a délku — v takovém případě je bezpečnější je nepoužít.
+ */
+const CZECHIA_BOUNDS = { minLat: 48.5, maxLat: 51.1, minLng: 12.0, maxLng: 18.9 }
+
+function isWithinCzechia(lat: number, lng: number): boolean {
+  return (
+    lat >= CZECHIA_BOUNDS.minLat &&
+    lat <= CZECHIA_BOUNDS.maxLat &&
+    lng >= CZECHIA_BOUNDS.minLng &&
+    lng <= CZECHIA_BOUNDS.maxLng
+  )
+}
+
+/**
+ * Přesná poloha z importu, jinak střed obce. Bez souřadnic by všechny
+ * importované inzeráty ze stejné obce ležely na mapě v jediném bodě.
+ */
+function resolveLocationPoint(
+  location: ImportListingInput['location'],
+  centroid: { x: number; y: number },
+): { x: number; y: number } {
+  const { lat, lng } = location
+  if (lat !== undefined && lng !== undefined && isWithinCzechia(lat, lng)) {
+    return { x: lng, y: lat }
+  }
+  return { x: centroid.x, y: centroid.y }
+}
+
 function listingValuesFromInput(
   input: ImportListingInput,
   resolved: Awaited<ReturnType<typeof resolveMunicipality>>,
@@ -207,7 +241,12 @@ function listingValuesFromInput(
     municipalityId: resolved.municipalityId,
     districtId: resolved.districtId,
     kraj: resolved.kraj,
-    locationPoint: { x: resolved.centroid!.x, y: resolved.centroid!.y },
+    locationPoint: resolveLocationPoint(input.location, resolved.centroid!),
+    // Viditelnost adresy se propíše jen když dorazila — opakovaný import
+    // jinak přepíše nastavení, které si inzerent upravil ručně.
+    ...(input.location.addressVisibility
+      ? { addressVisibility: input.location.addressVisibility }
+      : {}),
     ...mapOptionalAttributes(attributes),
     attributes: {
       importAgent: input.agent ?? null,

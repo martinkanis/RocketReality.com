@@ -1,4 +1,5 @@
 import type {
+  AddressVisibility,
   BuildingCondition,
   BuildingType,
   Disposition,
@@ -109,6 +110,16 @@ export const ENERGY_LABEL_BY_CODE: Record<number, EnergyLabel> = {
   5: 'E',
   6: 'F',
   7: 'G',
+}
+
+/**
+ * locality_inaccuracy_level — jak moc se má adresa na mapě znepřesnit:
+ * 1 přesně dle zadání, 2 na úroveň ulice, 3 na část obce.
+ */
+export const ADDRESS_VISIBILITY_BY_INACCURACY_LEVEL: Record<number, AddressVisibility> = {
+  1: 'presna',
+  2: 'ulice',
+  3: 'obec',
 }
 
 /** Číselníky s významem ano/ne (elevator, easy_access) — 1 = ano, 2 = ne. */

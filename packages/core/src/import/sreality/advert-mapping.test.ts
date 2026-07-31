@@ -118,6 +118,25 @@ describe('mapAdvertToImportInput', () => {
     ).toBe('https://my.matterport.com/show/?m=a')
   })
 
+  it('přenese přesné souřadnice, aby inzeráty nesplynuly ve středu obce', () => {
+    const input = map({ locality_latitude: 49.2018, locality_longitude: 16.5942 })
+
+    expect(input.location.lat).toBe(49.2018)
+    expect(input.location.lng).toBe(16.5942)
+  })
+
+  it('bez souřadnic je nechá nevyplněné a polohu doplní importní služba', () => {
+    expect(map().location.lat).toBeUndefined()
+    expect(map().location.lng).toBeUndefined()
+  })
+
+  it('převede úroveň znepřesnění adresy na viditelnost adresy', () => {
+    expect(map({ locality_inaccuracy_level: 1 }).location.addressVisibility).toBe('presna')
+    expect(map({ locality_inaccuracy_level: 2 }).location.addressVisibility).toBe('ulice')
+    expect(map({ locality_inaccuracy_level: 3 }).location.addressVisibility).toBe('obec')
+    expect(map().location.addressVisibility).toBeUndefined()
+  })
+
   it('výstup projde veřejným importním schématem', () => {
     expect(importListingSchema.safeParse(map()).success).toBe(true)
   })

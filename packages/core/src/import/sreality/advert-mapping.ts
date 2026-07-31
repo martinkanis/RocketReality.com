@@ -1,6 +1,7 @@
 import type { Disposition, TransactionType } from '@rocket/shared'
 import type { ImportListingInput } from '../service'
 import {
+  ADDRESS_VISIBILITY_BY_INACCURACY_LEVEL,
   BUILDING_CONDITION_BY_CODE,
   BUILDING_TYPE_BY_CODE,
   CURRENCY_CZK_CODE,
@@ -144,6 +145,25 @@ function resolvePrice(advert: SrealityAdvert): number | null {
   return Math.round(price)
 }
 
+/**
+ * Poloha a míra jejího zpřesnění. Souřadnice dává rozhraní jen někdy —
+ * když chybí, poskládá se poloha ze středu obce až v importní službě.
+ */
+function resolveLocation(advert: SrealityAdvert, city: string): ImportListingInput['location'] {
+  const lat = readNumber(advert, 'locality_latitude')
+  const lng = readNumber(advert, 'locality_longitude')
+  return {
+    city,
+    street: resolveStreet(advert),
+    lat,
+    lng,
+    addressVisibility: lookup(
+      ADDRESS_VISIBILITY_BY_INACCURACY_LEVEL,
+      readInteger(advert, 'locality_inaccuracy_level'),
+    ),
+  }
+}
+
 /** Ulice s číslem popisným/orientačním tak, jak se v adrese píše: „Botanická 68a/12". */
 function resolveStreet(advert: SrealityAdvert): string | undefined {
   const street = readString(advert, 'locality_street')
@@ -235,7 +255,7 @@ export function mapAdvertToImportInput(
     priceNote: readString(advert, 'advert_price_text_note'),
     currency: 'CZK',
     size: area,
-    location: { city, street: resolveStreet(advert) },
+    location: resolveLocation(advert, city),
     attributes: mapAttributes(advert),
     photos: [],
   }
