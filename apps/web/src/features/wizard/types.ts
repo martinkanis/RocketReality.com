@@ -64,6 +64,9 @@ export interface WizardData {
   municipalityId: number | null
   street: string
   streetNumber: string
+  /** Přesná poloha z našeptávače adres; bez ní se použije střed obce. */
+  addressLat: number | null
+  addressLng: number | null
   addressVisibility: AddressVisibility
   areaUsable: string
   areaBuiltUp: string
@@ -109,6 +112,8 @@ export interface DraftPayload {
   municipalityId: number | null
   street: string | null
   streetNumber: string | null
+  addressLat: number | null
+  addressLng: number | null
   addressVisibility: AddressVisibility
   areaUsable: number | null
   areaBuiltUp: number | null
@@ -174,6 +179,8 @@ export function createEmptyWizardData(): WizardData {
     municipalityId: null,
     street: '',
     streetNumber: '',
+    addressLat: null,
+    addressLng: null,
     addressVisibility: 'presna',
     areaUsable: '',
     areaBuiltUp: '',
@@ -248,6 +255,8 @@ export function toDraftPayload(data: WizardData): DraftPayload {
     municipalityId: data.municipalityId,
     street: emptyToNull(data.street),
     streetNumber: emptyToNull(data.streetNumber),
+    addressLat: data.addressLat,
+    addressLng: data.addressLng,
     addressVisibility: data.addressVisibility,
     areaUsable: isPozemky ? null : parseOptionalNumber(data.areaUsable),
     areaBuiltUp: isDomy ? parseOptionalNumber(data.areaBuiltUp) : null,

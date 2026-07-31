@@ -194,11 +194,7 @@ export function ListingWizard({
           {step === 3 && <StepParameters data={data} onChange={updateData} />}
           {step === 4 && <StepDescription data={data} onChange={updateData} />}
           {step === 5 && (
-            <StepPhotos
-              listingId={listingId}
-              photos={photos}
-              onPhotosChange={setPhotos}
-            />
+            <StepPhotos listingId={listingId} photos={photos} onPhotosChange={setPhotos} />
           )}
           {step === LAST_STEP && (
             <StepPrice

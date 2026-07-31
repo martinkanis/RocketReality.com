@@ -38,6 +38,8 @@ export const draftPayloadSchema = z.object({
   municipalityId: z.number().int().positive().nullable(),
   street: z.string().max(200).nullable(),
   streetNumber: z.string().max(20).nullable(),
+  addressLat: z.number().min(-90).max(90).nullable(),
+  addressLng: z.number().min(-180).max(180).nullable(),
   addressVisibility: z.enum(ADDRESS_VISIBILITIES),
   areaUsable: optionalArea,
   areaBuiltUp: optionalArea,

@@ -6,6 +6,7 @@ import { Info } from 'lucide-react'
 import { useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
+import { AddressAutocomplete, type PickedAddress } from '../address-autocomplete'
 import { Field } from '../fields'
 import type { MunicipalityOption, StepProps } from '../types'
 
@@ -92,9 +93,40 @@ interface StepLocationProps extends StepProps {
   municipalities: MunicipalityOption[]
 }
 
+/** Registr vrací ulici i s číslem („Botanická 934/68") — wizard je má zvlášť. */
+function splitStreetAndNumber(street: string): { street: string; streetNumber: string } {
+  const match = /^(.*?)\s+(\d[\d/a-zA-Z]*)$/.exec(street.trim())
+  if (!match) return { street: street.trim(), streetNumber: '' }
+  return { street: match[1]!.trim(), streetNumber: match[2]! }
+}
+
+function findMunicipalityByName(
+  municipalities: MunicipalityOption[],
+  name: string,
+): MunicipalityOption | undefined {
+  const normalized = normalizeForSearch(name.trim())
+  return municipalities.find((municipality) => normalizeForSearch(municipality.name) === normalized)
+}
+
 export function StepLocation({ data, onChange, municipalities }: StepLocationProps) {
+  function handleAddressPick(address: PickedAddress) {
+    const { street, streetNumber } = splitStreetAndNumber(address.street)
+    const municipality = findMunicipalityByName(municipalities, address.municipality)
+    onChange({
+      street,
+      streetNumber,
+      addressLat: address.lat,
+      addressLng: address.lng,
+      ...(municipality ? { municipalityId: municipality.id } : {}),
+    })
+  }
+
   return (
     <div className="flex flex-col gap-6">
+      <Field id="addressSearch" label="Vyhledat adresu">
+        <AddressAutocomplete onPick={handleAddressPick} />
+      </Field>
+
       <Field id="municipality" label="Obec" required>
         <MunicipalityCombobox
           municipalities={municipalities}
@@ -154,7 +186,9 @@ export function StepLocation({ data, onChange, municipalities }: StepLocationPro
 
       <p className="flex items-start gap-2 rounded-md bg-info-bg px-3 py-2.5 text-sm text-info">
         <Info className="mt-0.5 size-4 shrink-0" />
-        Polohu na mapě určíme automaticky podle zvolené obce.
+        {data.addressLat !== null
+          ? 'Polohu na mapě máme podle vybrané adresy.'
+          : 'Bez vyhledané adresy umístíme inzerát na střed obce — vyhledáním adresy ho na mapě najdou přesně.'}
       </p>
     </div>
   )

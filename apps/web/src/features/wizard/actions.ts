@@ -85,8 +85,15 @@ interface ResolvedLocation {
   locationPoint: { x: number; y: number }
 }
 
-/** GPS, okres a kraj se odvozují server-side z centroidu zvolené obce. */
-async function resolveLocation(municipalityId: number): Promise<ResolvedLocation> {
+/**
+ * Okres a kraj se odvozují z obce. Poloha se bere z našeptávače adres, a když
+ * inzerent adresu nevybral, zastoupí ji střed obce — pak ale inzerát na mapě
+ * splyne s ostatními ze stejné obce.
+ */
+async function resolveLocation(
+  municipalityId: number,
+  address: { lat: number | null; lng: number | null },
+): Promise<ResolvedLocation> {
   const db = getDb()
   const [row] = await db
     .select({
@@ -100,11 +107,14 @@ async function resolveLocation(municipalityId: number): Promise<ResolvedLocation
     .limit(1)
   if (!row) throw new Error(`Obec s ID ${municipalityId} neexistuje`)
   if (!row.centroid) throw new Error(`Obec s ID ${municipalityId} nemá souřadnice`)
+  const hasExactPosition = address.lat !== null && address.lng !== null
   return {
     municipalityId,
     districtId: row.districtId,
     kraj: row.kraj,
-    locationPoint: { x: row.centroid.x, y: row.centroid.y },
+    locationPoint: hasExactPosition
+      ? { x: address.lng!, y: address.lat! }
+      : { x: row.centroid.x, y: row.centroid.y },
   }
 }
 
@@ -179,7 +189,9 @@ export async function saveDraft(
   if (listingId) {
     const id = parseListingId(listingId)
     await requireOwnedEditableListing(id, user.id)
-    const location = data.municipalityId ? await resolveLocation(data.municipalityId) : null
+    const location = data.municipalityId
+      ? await resolveLocation(data.municipalityId, { lat: data.addressLat, lng: data.addressLng })
+      : null
     await db
       .update(listings)
       .set({ ...values, ...(location ?? {}) })
@@ -189,7 +201,10 @@ export async function saveDraft(
 
   if (!data.municipalityId) return { ok: true, listingId: null }
 
-  const location = await resolveLocation(data.municipalityId)
+  const location = await resolveLocation(data.municipalityId, {
+    lat: data.addressLat,
+    lng: data.addressLng,
+  })
   const membership = await getAgencyMembership(user.id)
   const [inserted] = await db
     .insert(listings)

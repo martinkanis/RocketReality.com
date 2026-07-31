@@ -19,6 +19,9 @@ export function listingRowToWizardData(row: ListingRow): WizardData {
     municipalityId: row.municipalityId,
     street: row.street ?? '',
     streetNumber: row.streetNumber ?? '',
+    // Uloženou polohu držíme, aby ji uložení konceptu nepřepsalo středem obce.
+    addressLat: row.locationPoint?.y ?? null,
+    addressLng: row.locationPoint?.x ?? null,
     addressVisibility: row.addressVisibility,
     areaUsable: numberToInput(row.areaUsable),
     areaBuiltUp: numberToInput(row.areaBuiltUp),
