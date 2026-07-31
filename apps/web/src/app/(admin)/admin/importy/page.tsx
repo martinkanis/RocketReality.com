@@ -70,7 +70,11 @@ export default async function AdminImportsPage() {
       <h1 className="mb-2 text-2xl font-semibold text-heading">Historie importů</h1>
       <p className="mb-6 text-sm text-muted-foreground">
         Inzeráty přijaté přes API pro import. Ukazuje, co dorazilo, komu patří a v jakém stavu
-        inzerát skončil — importované inzeráty procházejí moderací stejně jako ručně vložené.
+        inzerát skončil — importované inzeráty procházejí moderací stejně jako ručně vložené.{' '}
+        <Link href="/admin/importy/napoveda" className="text-brand-500 hover:text-primary">
+          Jak import funguje a jak zapojit kancelář
+        </Link>
+        .
       </p>
 
       {rows.length === 0 ? (
