@@ -14,6 +14,7 @@
     "test": "turbo run test",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "import:check": "pnpm --filter @rocket/db exec tsx ../../tools/import-rpc-check.mts",
     "db:generate": "pnpm --filter @rocket/db generate",
     "db:migrate": "pnpm --filter @rocket/db migrate",
     "db:seed": "pnpm --filter @rocket/db seed"
