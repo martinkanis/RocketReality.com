@@ -16,6 +16,8 @@ interface ModerationQueueItemProps {
   locality: string
   owner: string
   submittedAt: string
+  /** Upozornění z automatické kontroly, typicky podezření na duplicitu. */
+  flaggedNote?: string | null
 }
 
 export function ModerationQueueItem(props: ModerationQueueItemProps) {
@@ -64,6 +66,11 @@ export function ModerationQueueItem(props: ModerationQueueItemProps) {
         <Badge variant="muted">Čeká na schválení</Badge>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
+        {props.flaggedNote ? (
+          <p className="rounded-md bg-warning-bg px-3 py-2 text-sm text-warning">
+            {props.flaggedNote}
+          </p>
+        ) : null}
         <p className="line-clamp-3 whitespace-pre-line text-sm">{props.description}</p>
         {isRejecting ? (
           <div className="flex flex-col gap-3 rounded-md border border-border bg-surface-alt p-4">

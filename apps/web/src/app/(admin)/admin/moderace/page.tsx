@@ -11,6 +11,7 @@ export default async function ModerationPage() {
     .select({
       caseId: moderationCases.id,
       createdAt: moderationCases.createdAt,
+      flaggedNote: moderationCases.note,
       listingId: listings.id,
       slug: listings.slug,
       title: listings.title,
@@ -56,6 +57,7 @@ export default async function ModerationPage() {
             locality={`${item.municipalityName}, okres ${item.districtName}`}
             owner={`${item.ownerName} (${item.ownerEmail})`}
             submittedAt={item.createdAt.toLocaleString('cs-CZ')}
+            flaggedNote={item.flaggedNote}
           />
         ))}
       </div>

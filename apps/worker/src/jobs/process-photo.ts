@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto'
 import { GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
 import { eq } from 'drizzle-orm'
 import sharp from 'sharp'
@@ -106,6 +107,8 @@ export async function processMedia(mediaId: string): Promise<void> {
       variants,
       width: metadata.width ?? null,
       height: metadata.height ?? null,
+      // Otisk originálu slouží k rozpoznání téže nemovitosti nabízené dvakrát.
+      contentHash: media.contentHash ?? createHash('sha256').update(original).digest('hex'),
       isReady: true,
     })
     .where(eq(listingMedia.id, mediaId))
