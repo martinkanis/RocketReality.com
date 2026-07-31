@@ -1,3 +1,4 @@
+export * from './addresses/address-search'
 export * from './agencies/ares'
 export * from './billing/payment-provider'
 export * from './billing/orders'
