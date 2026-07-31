@@ -15,6 +15,8 @@ export const users = pgTable('users', {
   image: text(),
   phone: text(),
   accountType: accountTypeEnum().notNull().default('soukromnik'),
+  /** Účet pro výplatu odměny z launch akce; alternativa k platebnímu QR ve fotce. */
+  payoutIban: text(),
   role: text().notNull().default('user'),
   banned: boolean().notNull().default(false),
   banReason: text(),

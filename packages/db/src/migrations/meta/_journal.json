@@ -71,6 +71,13 @@
       "when": 1785525719867,
       "tag": "0009_flowery_spirit",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1785527367657,
+      "tag": "0010_chubby_lila_cheney",
+      "breakpoints": true
     }
   ]
 }

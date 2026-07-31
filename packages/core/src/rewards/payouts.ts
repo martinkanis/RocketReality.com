@@ -1,4 +1,4 @@
-import { agencies, getDb, listingMedia, listings, rewardPayouts } from '@rocket/db'
+import { agencies, getDb, listingMedia, listings, rewardPayouts, users } from '@rocket/db'
 import { and, count, countDistinct, eq, isNotNull, isNull, ne } from 'drizzle-orm'
 import {
   checkRewardEligibility,
@@ -7,7 +7,7 @@ import {
   type RewardBeneficiary,
   type RewardRejectionReason,
 } from './eligibility'
-import { parseSpayd } from './spayd'
+import { buildSpayd, isValidIban, parseSpayd } from './spayd'
 
 /**
  * Zakládání nároku na odměnu z launch akce.
@@ -55,8 +55,16 @@ async function countBeneficiaries(beneficiary: RewardBeneficiary): Promise<numbe
   return row?.value ?? 0
 }
 
+/** Kam odměnu poslat: číslo účtu i zdroj, ze kterého jsme ho vzali. */
+interface PayoutTarget {
+  mediaId: string | null
+  iban: string
+  bic: string | null
+  spaydRaw: string
+}
+
 /** Platební údaje z QR kódu ve fotkách inzerátu. */
-async function findPaymentQr(listingId: string) {
+async function findPaymentQr(listingId: string): Promise<PayoutTarget | null> {
   const [media] = await getDb()
     .select({ id: listingMedia.id, spayd: listingMedia.paymentQrSpayd })
     .from(listingMedia)
@@ -65,7 +73,39 @@ async function findPaymentQr(listingId: string) {
   if (!media?.spayd) return null
 
   const payment = parseSpayd(media.spayd)
-  return payment ? { mediaId: media.id, payment } : null
+  if (!payment) return null
+  return { mediaId: media.id, iban: payment.iban, bic: payment.bic, spaydRaw: payment.raw }
+}
+
+/**
+ * Účet uložený v profilu. Kancelář QR kód ve fotkách neposílá — její export
+ * fotí nemovitost, ne platební příkaz — takže nárok jinak nemá jak uplatnit.
+ */
+async function findStoredPayoutIban(
+  beneficiary: RewardBeneficiary,
+  amountCzk: number,
+): Promise<PayoutTarget | null> {
+  const db = getDb()
+  const [row] =
+    beneficiary.kind === 'agency'
+      ? await db
+          .select({ iban: agencies.payoutIban })
+          .from(agencies)
+          .where(eq(agencies.id, beneficiary.id))
+          .limit(1)
+      : await db
+          .select({ iban: users.payoutIban })
+          .from(users)
+          .where(eq(users.id, beneficiary.id))
+          .limit(1)
+
+  if (!row?.iban || !isValidIban(row.iban)) return null
+  return {
+    mediaId: null,
+    iban: row.iban,
+    bic: null,
+    spaydRaw: buildSpayd({ iban: row.iban, amountCzk, message: 'Odmena za inzerat' }),
+  }
 }
 
 /**
@@ -98,10 +138,13 @@ export async function recordRewardForPublishedListing(listingId: string): Promis
     .limit(1)
   if (existing) return { created: false, reason: 'already_rewarded' }
 
-  const source = await findPaymentQr(listingId)
-  if (!source) return { created: false, reason: 'no_payment_details' }
-
   const beneficiary = resolveBeneficiary(listing.agencyId, listing.ownerUserId)
+  const amountCzk = rewardAmountCzk(beneficiary.kind)
+  // QR ve fotce má přednost — inzerent jím řekl konkrétní účet u konkrétního inzerátu.
+  const target =
+    (await findPaymentQr(listingId)) ?? (await findStoredPayoutIban(beneficiary, amountCzk))
+  if (!target) return { created: false, reason: 'no_payment_details' }
+
   const rewardedListings = await countRewardedListings(beneficiary)
   const eligibility = checkRewardEligibility({
     beneficiary,
@@ -111,18 +154,17 @@ export async function recordRewardForPublishedListing(listingId: string): Promis
   })
   if (!eligibility.isEligible) return { created: false, reason: eligibility.reason }
 
-  const amountCzk = rewardAmountCzk(beneficiary.kind)
   await db
     .insert(rewardPayouts)
     .values({
       listingId,
-      mediaId: source.mediaId,
+      mediaId: target.mediaId,
       beneficiaryUserId: beneficiary.kind === 'private' ? beneficiary.id : null,
       beneficiaryAgencyId: beneficiary.kind === 'agency' ? beneficiary.id : null,
-      iban: source.payment.iban,
-      bic: source.payment.bic,
+      iban: target.iban,
+      bic: target.bic,
       amountCzk,
-      spaydRaw: source.payment.raw,
+      spaydRaw: target.spaydRaw,
     })
     .onConflictDoNothing()
 

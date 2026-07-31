@@ -29,6 +29,8 @@ export const agencies = pgTable(
     aresData: jsonb(),
     aresSyncedAt: timestamp({ withTimezone: true }),
     logoKey: text(),
+    /** Účet pro výplatu odměny z launch akce — kancelář QR ve fotkách neposílá. */
+    payoutIban: text(),
     description: text(),
     web: text(),
     email: text(),
