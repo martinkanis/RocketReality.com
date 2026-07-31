@@ -1,6 +1,6 @@
 import { districts, getDb, listings, moderationCases, municipalities, users } from '@rocket/db'
 import { formatPrice } from '@rocket/shared'
-import { asc, eq } from 'drizzle-orm'
+import { and, asc, eq, isNull } from 'drizzle-orm'
 import { ModerationQueueItem } from '@/features/moderation/moderation-queue-item'
 
 export const metadata = { title: 'Moderace inzerátů' }
@@ -30,7 +30,8 @@ export default async function ModerationPage() {
     .innerJoin(municipalities, eq(listings.municipalityId, municipalities.id))
     .innerJoin(districts, eq(listings.districtId, districts.id))
     .innerJoin(users, eq(listings.ownerUserId, users.id))
-    .where(eq(moderationCases.status, 'pending'))
+    // Smazaný inzerát nemá co schvalovat — jinak by ve frontě zůstal viset.
+    .where(and(eq(moderationCases.status, 'pending'), isNull(listings.deletedAt)))
     .orderBy(asc(moderationCases.createdAt))
 
   return (
