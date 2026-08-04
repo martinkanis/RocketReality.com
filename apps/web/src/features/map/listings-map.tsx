@@ -9,6 +9,68 @@ const MAP_STYLE_URL = 'https://tiles.openfreemap.org/styles/liberty'
 const CZECHIA_CENTER: [number, number] = [15.47, 49.82]
 const INITIAL_ZOOM = 7
 const SOURCE_ID = 'inzeraty'
+const POPUP_WIDTH_PX = 220
+const POPUP_PHOTO_HEIGHT_PX = 130
+
+type PopupListing = {
+  locality: string
+  photo: string | null
+  price: string
+  slug: string
+  title: string
+}
+
+/** Vlastnosti z GeoJSON jsou netypované — sem se dostanou jen jako text. */
+function readPopupListing(properties: Record<string, unknown> | null): PopupListing {
+  const text = (key: keyof PopupListing): string => {
+    const value = properties?.[key]
+    return typeof value === 'string' ? value : ''
+  }
+  const photo = properties?.photo
+
+  return {
+    slug: text('slug'),
+    title: text('title'),
+    price: text('price'),
+    locality: text('locality'),
+    photo: typeof photo === 'string' && photo.length > 0 ? photo : null,
+  }
+}
+
+/**
+ * Obsah bubliny se skládá z prvků, ne ze slepeného HTML — název i lokalita
+ * pocházejí z inzerátu zadaného uživatelem, takže by se přes ně dal do
+ * stránky propašovat cizí kód.
+ */
+function buildPopupContent({ locality, photo, price, slug, title }: PopupListing): HTMLElement {
+  const link = document.createElement('a')
+  link.href = `/detail/${slug}`
+  link.style.cssText = `display:block;width:${POPUP_WIDTH_PX}px;color:inherit;text-decoration:none`
+
+  if (photo) {
+    const image = document.createElement('img')
+    image.src = photo
+    image.alt = title
+    image.loading = 'lazy'
+    image.style.cssText = `width:100%;height:${POPUP_PHOTO_HEIGHT_PX}px;object-fit:cover;border-radius:6px;margin-bottom:6px;background:#eef0f1`
+    link.append(image)
+  }
+
+  const heading = document.createElement('div')
+  heading.textContent = title
+  heading.style.cssText = 'font-weight:600;color:#1a433e'
+
+  const place = document.createElement('div')
+  place.textContent = locality
+  place.style.cssText = 'color:#4d585d;font-size:12px;margin-top:2px'
+
+  const amount = document.createElement('div')
+  amount.textContent = price
+  amount.style.cssText = 'font-weight:600;color:#1a433e;margin-top:4px'
+
+  link.append(heading, place, amount)
+  return link
+}
 
 /** Fullscreen mapa s clustrovanými piny aktivních inzerátů (data dle viewportu). */
 export function ListingsMap() {
@@ -109,14 +171,9 @@ export function ListingsMap() {
       map.on('click', 'pin', (event: MapMouseEvent) => {
         const [feature] = map.queryRenderedFeatures(event.point, { layers: ['pin'] })
         if (!feature || feature.geometry.type !== 'Point') return
-        const { slug, title, price, locality } = feature.properties as Record<string, string>
-        new maplibregl.Popup({ offset: 12 })
+        new maplibregl.Popup({ offset: 12, maxWidth: `${POPUP_WIDTH_PX}px` })
           .setLngLat(feature.geometry.coordinates as [number, number])
-          .setHTML(
-            `<a href="/detail/${slug}" style="font-weight:600;color:#1a433e;text-decoration:none">${title}</a>` +
-              `<div style="color:#4d585d;font-size:12px;margin-top:2px">${locality}</div>` +
-              `<div style="font-weight:600;color:#1a433e;margin-top:4px">${price}</div>`,
-          )
+          .setDOMContent(buildPopupContent(readPopupListing(feature.properties)))
           .addTo(map)
       })
 

@@ -1,7 +1,9 @@
-import { districts, getDb, listings, municipalities } from '@rocket/db'
+import { districts, getDb, listingMedia, listings, municipalities } from '@rocket/db'
 import { formatPrice } from '@rocket/shared'
-import { and, eq, isNull, sql } from 'drizzle-orm'
+import { and, asc, eq, isNull, sql } from 'drizzle-orm'
 import { NextResponse, type NextRequest } from 'next/server'
+
+import { mediaVariantUrl } from '@/lib/media'
 
 const MAX_FEATURES = 500
 
@@ -25,7 +27,22 @@ export async function GET(request: NextRequest) {
   }
 
   const db = getDb()
+
+  // Titulní fotka inzerátu — první připravená v pořadí, stejně jako ve výpisech.
+  const coverPhoto = db.$with('cover_photo').as(
+    db
+      .selectDistinctOn([listingMedia.listingId], {
+        listingId: listingMedia.listingId,
+        storageKey: listingMedia.storageKey,
+        variants: listingMedia.variants,
+      })
+      .from(listingMedia)
+      .where(and(eq(listingMedia.kind, 'foto'), eq(listingMedia.isReady, true)))
+      .orderBy(listingMedia.listingId, asc(listingMedia.position)),
+  )
+
   const rows = await db
+    .with(coverPhoto)
     .select({
       id: listings.id,
       slug: listings.slug,
@@ -38,10 +55,13 @@ export async function GET(request: NextRequest) {
       districtName: districts.name,
       lat: sql<number>`ST_Y(${listings.locationPoint})`,
       lng: sql<number>`ST_X(${listings.locationPoint})`,
+      coverStorageKey: coverPhoto.storageKey,
+      coverVariants: coverPhoto.variants,
     })
     .from(listings)
     .innerJoin(municipalities, eq(listings.municipalityId, municipalities.id))
     .innerJoin(districts, eq(listings.districtId, districts.id))
+    .leftJoin(coverPhoto, eq(coverPhoto.listingId, listings.id))
     .where(
       and(
         eq(listings.status, 'active'),
@@ -67,6 +87,9 @@ export async function GET(request: NextRequest) {
           hidden: row.priceHidden,
         }),
         locality: `${row.municipalityName}, okres ${row.districtName}`,
+        photo: row.coverStorageKey
+          ? mediaVariantUrl(row.coverStorageKey, row.coverVariants, 'thumb')
+          : null,
         topped: row.isTopped,
       },
     })),
