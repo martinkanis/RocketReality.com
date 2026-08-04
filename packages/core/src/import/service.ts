@@ -148,25 +148,82 @@ function resolveDisposition(input: ImportListingInput): Disposition | null {
   )
 }
 
+const municipalityColumns = {
+  municipalityId: municipalities.id,
+  districtId: municipalities.districtId,
+  name: municipalities.name,
+  kraj: districts.kraj,
+  centroid: municipalities.centroid,
+}
+
+const normalizeName = (value: string): string =>
+  value
+    .normalize('NFKD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .trim()
+
+const escapeRegExp = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+/**
+ * Obsahuje zadaný název obec jako samostatné slovo? Odliší „Moravská Ostrava
+ * a Přívoz" (obvod Ostravy) od náhodné shody uvnitř jiného slova.
+ */
+const containsAsWord = (haystack: string, needle: string): boolean =>
+  new RegExp(`(^|[^\\p{L}\\p{N}])${escapeRegExp(needle)}([^\\p{L}\\p{N}]|$)`, 'u').test(haystack)
+
+/**
+ * Vybere z nabídnutých obcí ty, jejichž název je v zadání samostatným
+ * slovem, a seřadí je od nejdelší. Nejdelší shoda vyhrává, aby „Ústí nad
+ * Labem-město" neskončilo u obce „Ústí".
+ */
+export function matchMunicipalityByPart<T extends { name: string }>(
+  candidates: T[],
+  city: string,
+): T[] {
+  const normalizedCity = normalizeName(city)
+  return candidates
+    .filter((candidate) => containsAsWord(normalizedCity, normalizeName(candidate.name)))
+    .sort((left, right) => right.name.length - left.name.length)
+}
+
+/**
+ * Statutární města se dělí na městské obvody a inzerenti je píšou do pole
+ * obce — „Praha 4", „Brno-střed", „Moravská Ostrava a Přívoz". V číselníku
+ * obcí takový záznam není, takže se hledá obec, jejíž název je v zadání
+ * obsažen. Původní název se zachová jako část obce.
+ */
+async function resolveMunicipalityPart(city: string) {
+  const db = getDb()
+  const rows = await db
+    .select(municipalityColumns)
+    .from(municipalities)
+    .innerJoin(districts, eq(municipalities.districtId, districts.id))
+    .where(
+      sql`immutable_unaccent(lower(${city})) like '%' || immutable_unaccent(lower(${municipalities.name})) || '%'`,
+    )
+    .limit(50)
+
+  return matchMunicipalityByPart(rows, city)
+}
+
 /**
  * Najde obec podle názvu (bez diakritiky, case-insensitive); kraj z location.region
  * použije k rozlišení stejnojmenných obcí. Vrací i odvozený okres a souřadnice.
  */
 async function resolveMunicipality(location: ImportListingInput['location']) {
   const db = getDb()
-  const rows = await db
-    .select({
-      municipalityId: municipalities.id,
-      districtId: municipalities.districtId,
-      kraj: districts.kraj,
-      centroid: municipalities.centroid,
-    })
+  const exact = await db
+    .select(municipalityColumns)
     .from(municipalities)
     .innerJoin(districts, eq(municipalities.districtId, districts.id))
     .where(
       sql`immutable_unaccent(lower(${municipalities.name})) = immutable_unaccent(lower(${location.city}))`,
     )
     .limit(10)
+
+  const rows = exact.length > 0 ? exact : await resolveMunicipalityPart(location.city)
+  const municipalityPart = exact.length > 0 ? null : location.city
 
   if (rows.length === 0) {
     throw new ImportValidationError(`Obec "${location.city}" jsme nenašli v číselníku obcí`)
@@ -178,7 +235,7 @@ async function resolveMunicipality(location: ImportListingInput['location']) {
   if (!match || !match.centroid) {
     throw new ImportValidationError(`Obec "${location.city}" nemá v číselníku souřadnice`)
   }
-  return match
+  return { ...match, municipalityPart }
 }
 
 /**
@@ -238,6 +295,7 @@ function listingValuesFromInput(
       (input.offerType === 'rent' ? ('za_mesic' as const) : ('celkem' as const)),
     areaUsable: input.size ?? null,
     street: input.location.street ?? null,
+    municipalityPart: resolved.municipalityPart,
     municipalityId: resolved.municipalityId,
     districtId: resolved.districtId,
     kraj: resolved.kraj,

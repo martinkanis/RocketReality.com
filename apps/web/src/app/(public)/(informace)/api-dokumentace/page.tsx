@@ -134,9 +134,11 @@ const FIELD_ROWS: FieldRow[] = [
     type: 'objekt',
     required: 'ano',
     description:
-      'Adresa nemovitosti: street, city, postalCode, region. Volitelně lat a lng — bez nich ' +
-      'umístíme inzerát na střed obce, takže se na mapě překryje s ostatními. Volitelně také ' +
-      'addressVisibility ("presna", "ulice", "obec") pro míru zpřesnění adresy na mapě.',
+      'Adresa nemovitosti: street, city, postalCode, region. Do city lze uvést i městský obvod ' +
+      '(„Praha 4", „Brno-střed", „Moravská Ostrava a Přívoz") — obec dohledáme sami a obvod ' +
+      'u inzerátu zachováme. Volitelně lat a lng — bez nich umístíme inzerát na střed obce, ' +
+      'takže se na mapě překryje s ostatními. Volitelně také addressVisibility ("presna", ' +
+      '"ulice", "obec") pro míru zpřesnění adresy na mapě.',
   },
   {
     name: 'photos',
