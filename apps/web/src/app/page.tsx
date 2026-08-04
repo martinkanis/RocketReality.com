@@ -209,7 +209,7 @@ export default function HomePage() {
           {REWARD_LIMITS.agency.amountCzkPerListing * REWARD_LIMITS.agency.maxRewardedListings} Kč.
         </p>
       </section>
-      <div className="mx-auto -mt-16 w-full max-w-4xl px-4">
+      <div id="hledani" className="mx-auto -mt-16 w-full max-w-4xl scroll-mt-20 px-4">
         <HomeSearchPanel />
       </div>
       <CategoryTiles />

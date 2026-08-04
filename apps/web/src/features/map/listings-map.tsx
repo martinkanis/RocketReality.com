@@ -45,7 +45,9 @@ function readPopupListing(properties: Record<string, unknown> | null): PopupList
 function buildPopupContent({ locality, photo, price, slug, title }: PopupListing): HTMLElement {
   const link = document.createElement('a')
   link.href = `/detail/${slug}`
-  link.style.cssText = `display:block;width:${POPUP_WIDTH_PX}px;color:inherit;text-decoration:none`
+  // max-width drží obsah uvnitř bubliny: maplibre kolem něj přidává vlastní
+  // padding, takže samotná pevná šířka fotku přetahovala přes zaoblený roh.
+  link.style.cssText = `display:block;width:${POPUP_WIDTH_PX}px;max-width:100%;color:inherit;text-decoration:none`
 
   if (photo) {
     const image = document.createElement('img')

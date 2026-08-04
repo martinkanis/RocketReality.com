@@ -8,10 +8,13 @@ import { BrandSymbol } from '@/components/layout/brand-symbol'
 import { Button } from '@/components/ui/button'
 import { authClient } from '@/lib/auth-client'
 
+// Prodej/Pronájem/Dražby vedou na vyhledávání na homepage s předvolenou
+// nabídkou — uživatel si tam nejdřív vybere typ nemovitosti, pak teprve
+// míří na výpis. Stejný postup jako na velkých portálech.
 const NAV_ITEMS = [
-  { href: '/prodej/byty', label: 'Prodej' },
-  { href: '/pronajem/byty', label: 'Pronájem' },
-  { href: '/drazby/byty', label: 'Dražby' },
+  { href: '/?nabidka=prodej#hledani', label: 'Prodej' },
+  { href: '/?nabidka=pronajem#hledani', label: 'Pronájem' },
+  { href: '/?nabidka=drazba#hledani', label: 'Dražby' },
   { href: '/mapa', label: 'Mapa' },
   { href: '/realitni-kancelare', label: 'Realitní kanceláře' },
   { href: '/archiv', label: 'Archiv' },
