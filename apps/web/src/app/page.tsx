@@ -63,10 +63,11 @@ function formatOfferCount(count: number): string {
 }
 
 async function CategoryTiles() {
-  const counts = await getActiveCategoryCounts()
+  // Dlaždice vedou na výpisy prodeje — titulek i počty tomu musí odpovídat.
+  const counts = await getActiveCategoryCounts('prodej')
   return (
     <section className="mx-auto w-full max-w-6xl px-4 pt-16">
-      <h2 className="text-2xl font-semibold">Prohlédněte si nabídku</h2>
+      <h2 className="text-2xl font-semibold">Prohlédněte si nabídku prodeje</h2>
       <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
         {CATEGORIES_MAIN.map((category) => {
           const Icon = CATEGORY_ICONS[category.slug] ?? Building2
