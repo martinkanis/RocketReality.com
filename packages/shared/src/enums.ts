@@ -172,9 +172,10 @@ export const SOLD_LISTING_IN_RESULTS_DAYS = 14
 /**
  * Zámek stažení: po tuto dobu od zveřejnění nejde inzerát archivovat jako
  * „staženo inzerentem“ ani „jiné“ — jediný východ je prodáno/pronajato.
- * Brání vybrání odměny a okamžitému zmizení inzerátu z webu.
+ * Brání vybrání odměny a okamžitému zmizení inzerátu z webu. Kryje se
+ * s dobou publikace, takže platí po celý základní život inzerátu.
  */
-export const LISTING_WITHDRAWAL_LOCK_DAYS = 90
+export const LISTING_WITHDRAWAL_LOCK_DAYS = 30
 
 export const ARCHIVE_REASONS = ['prodano', 'pronajato', 'stazeno_inzerentem', 'jine'] as const
 export type ArchiveReason = (typeof ARCHIVE_REASONS)[number]

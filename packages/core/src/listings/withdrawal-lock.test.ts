@@ -27,8 +27,8 @@ describe('canArchiveWithReason', () => {
 })
 
 describe('withdrawalLockedUntil', () => {
-  it('zámek trvá 90 dní od zveřejnění', () => {
-    expect(withdrawalLockedUntil(publishedAt)).toEqual(new Date('2026-10-30T10:00:00Z'))
+  it('zámek trvá 30 dní od zveřejnění', () => {
+    expect(withdrawalLockedUntil(publishedAt)).toEqual(new Date('2026-08-31T10:00:00Z'))
   })
 
   it('bez zveřejnění není zámek', () => {
