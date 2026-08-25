@@ -35,6 +35,13 @@ export const REWARD_LIMITS = {
 
 export type RewardBeneficiaryKind = keyof typeof REWARD_LIMITS
 
+/**
+ * Ochranná lhůta odměny: když inzerát přestane být veřejně viditelný dřív
+ * než po tolika dnech od zveřejnění, nevyplacený nárok se automaticky
+ * zamítne. Označení prodáno/pronajato viditelnost neukončuje.
+ */
+export const REWARD_PROTECTION_DAYS = 7
+
 export const DEFAULT_PRODUCTS: readonly ProductDefinition[] = [
   {
     code: PRODUCT_CODES.publikace30d,

@@ -66,6 +66,8 @@ export interface SearchResultItem {
   lng: number
   isTopped: boolean
   publishedAt: Date | null
+  /** Vyplněný u čerstvě prodaných/pronajatých, které ještě visí ve výpisech. */
+  archiveReason: string | null
   coverPhotoUrl: string | null
 }
 

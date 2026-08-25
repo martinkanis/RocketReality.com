@@ -1,4 +1,4 @@
-import { CATEGORY_MAIN_BY_SLUG } from '@rocket/shared'
+import { CATEGORY_MAIN_BY_SLUG, SOLD_LISTING_IN_RESULTS_DAYS } from '@rocket/shared'
 import { getDb, districts, listingMedia, listings, municipalities } from '@rocket/db'
 import { and, asc, desc, eq, gte, inArray, lte, sql, type SQL } from 'drizzle-orm'
 import type { ListingSearchPort, SearchQuery, SearchResult, SearchResultItem } from './query'
@@ -49,6 +49,7 @@ export class PostgresListingSearch implements ListingSearchPort {
         lng: sql<number>`ST_X(${listings.locationPoint})`,
         isTopped: sql<boolean>`coalesce(${listings.toppedUntil} > now(), false)`,
         publishedAt: listings.publishedAt,
+        archiveReason: listings.archiveReason,
         coverVariants: coverPhoto.variants,
         total: sql<number>`count(*) OVER ()::int`,
       })
@@ -81,6 +82,7 @@ export class PostgresListingSearch implements ListingSearchPort {
       lng: row.lng,
       isTopped: row.isTopped,
       publishedAt: row.publishedAt,
+      archiveReason: row.archiveReason,
       coverPhotoUrl: extractCardVariant(row.coverVariants),
     }))
 
@@ -105,9 +107,17 @@ export function buildSearchOrderBy(query: SearchQuery): SQL[] {
   return [toppedFirst, desc(listings.publishedAt)]
 }
 
+/**
+ * Ve výpisech jsou aktivní inzeráty a čerstvě prodané/pronajaté — ty s viditelným
+ * štítkem ukazují, že se tu obchoduje, a po pár dnech se stáhnou do archivu.
+ */
+function visibleInResults(): SQL {
+  return sql`(${listings.status} = 'active' OR (${listings.status} = 'archived' AND ${listings.archiveReason} = ANY(ARRAY['prodano', 'pronajato']::archive_reason[]) AND ${listings.statusChangedAt} >= now() - make_interval(days => ${SOLD_LISTING_IN_RESULTS_DAYS})))`
+}
+
 /** Sestaví WHERE podmínky pro vyhledávací dotaz; exportováno kvůli testům generovaného SQL. */
 export function buildSearchConditions(query: SearchQuery, categoryMainId: number): SQL[] {
-  const conditions: SQL[] = [eq(listings.status, 'active'), sql`${listings.deletedAt} IS NULL`]
+  const conditions: SQL[] = [visibleInResults(), sql`${listings.deletedAt} IS NULL`]
   conditions.push(eq(listings.transaction, query.transaction))
   conditions.push(eq(listings.categoryMainId, categoryMainId))
 

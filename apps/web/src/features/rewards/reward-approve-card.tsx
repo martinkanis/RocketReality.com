@@ -15,6 +15,8 @@ interface RewardApproveCardProps {
   listingSlug: string
   listingStatus: string
   ibanPayoutCount: number
+  /** Počet dní od zveřejnění do označení prodáno/pronajato, když bylo podezřele brzy. */
+  earlySoldDays?: number | null
 }
 
 export function RewardApproveCard(props: RewardApproveCardProps) {
@@ -50,6 +52,15 @@ export function RewardApproveCard(props: RewardApproveCardProps) {
         <Badge variant="accent">{props.amountCzk} Kč</Badge>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
+        {props.earlySoldDays !== null && props.earlySoldDays !== undefined ? (
+          <p className="rounded-sm bg-warning-bg px-3 py-2 text-sm text-warning">
+            Pozor: inzerát byl označen jako prodaný/pronajatý{' '}
+            {props.earlySoldDays === 0
+              ? 'ještě v den zveřejnění'
+              : `už po ${props.earlySoldDays} dnech od zveřejnění`}
+            . Ověřte, že jde o skutečný obchod.
+          </p>
+        ) : null}
         {props.ibanPayoutCount > 0 ? (
           <p className="rounded-sm bg-warning-bg px-3 py-2 text-sm text-warning">
             Pozor: tento IBAN už má {props.ibanPayoutCount}× schválenou nebo vyplacenou odměnu.

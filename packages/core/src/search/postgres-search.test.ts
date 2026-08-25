@@ -17,11 +17,22 @@ function renderConditions(overrides: Record<string, unknown> = {}) {
   return dialect.sqlToQuery(where)
 }
 
+describe('buildSearchConditions — viditelnost', () => {
+  it('do výpisu patří aktivní a čerstvě prodané/pronajaté', () => {
+    const { sql } = renderConditions()
+
+    expect(sql).toContain("'active'")
+    expect(sql).toContain("'archived'")
+    expect(sql).toContain("ARRAY['prodano', 'pronajato']")
+    expect(sql).toContain('make_interval')
+  })
+})
+
 describe('buildSearchConditions — pole-filtry', () => {
   it('dispozice generuje IN s jedním parametrem na hodnotu, ne = ANY(($1, $2))', () => {
     const { sql, params } = renderConditions({ disposition: ['2+kk', '3+kk'] })
 
-    expect(sql).not.toMatch(/= ANY/i)
+    expect(sql).not.toMatch(/"disposition" = ANY/i)
     expect(sql).toMatch(/"disposition" in \(\$\d+, \$\d+\)/)
     expect(params).toContain('2+kk')
     expect(params).toContain('3+kk')
@@ -35,8 +46,8 @@ describe('buildSearchConditions — pole-filtry', () => {
       furnishing: ['zarizeno'],
     })
 
-    expect(sql).not.toMatch(/= ANY/i)
     for (const column of ['ownership', 'building_type', 'building_condition', 'furnishing']) {
+      expect(sql).not.toMatch(new RegExp(`"${column}" = ANY`, 'i'))
       expect(sql).toMatch(new RegExp(`"${column}" in \\(\\$\\d+\\)`))
     }
     expect(params).toEqual(expect.arrayContaining(['osobni', 'cihlova', 'dobry', 'zarizeno']))

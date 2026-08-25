@@ -50,6 +50,7 @@ export async function getFavoriteListingItems(
       lng: sql<number>`ST_X(${listings.locationPoint})`,
       isTopped: sql<boolean>`coalesce(${listings.toppedUntil} > now(), false)`,
       publishedAt: listings.publishedAt,
+      archiveReason: listings.archiveReason,
       coverVariants: coverPhoto.variants,
     })
     .from(favorites)

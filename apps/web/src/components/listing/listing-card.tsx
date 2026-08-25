@@ -16,6 +16,13 @@ function formatCardLocation(item: SearchResultItem): string {
   return `${item.municipalityName}, okres ${item.districtName}`
 }
 
+/** Štítek uzavřeného obchodu — čerstvě prodané/pronajaté ještě visí ve výpisech. */
+function closedDealLabel(item: SearchResultItem): string | null {
+  if (item.archiveReason === 'prodano') return 'Prodáno'
+  if (item.archiveReason === 'pronajato') return 'Pronajato'
+  return null
+}
+
 interface ListingCardProps {
   item: SearchResultItem
   /** null/undefined = srdíčko nezobrazovat (nepřihlášený uživatel, kontext bez dat). */
@@ -25,6 +32,7 @@ interface ListingCardProps {
 /** Karta inzerátu ve výpisu a na homepage. Celá karta je odkaz na detail. */
 export function ListingCard({ item, isFavorite }: ListingCardProps) {
   const photoUrl = item.coverPhotoUrl ? mediaUrl(item.coverPhotoUrl) : null
+  const dealLabel = closedDealLabel(item)
   const area = item.areaUsable ?? item.areaLand
   const price = formatPrice({
     amount: item.priceAmount,
@@ -44,14 +52,23 @@ export function ListingCard({ item, isFavorite }: ListingCardProps) {
             src={photoUrl}
             alt={item.title}
             loading="lazy"
-            className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
+            className={`size-full object-cover transition-transform duration-300 group-hover:scale-105 ${dealLabel ? 'opacity-60 grayscale' : ''}`}
           />
         ) : (
-          <div className="flex size-full items-center justify-center bg-linear-to-br from-brand-100 to-brand-200">
+          <div
+            className={`flex size-full items-center justify-center bg-linear-to-br from-brand-100 to-brand-200 ${dealLabel ? 'opacity-60 grayscale' : ''}`}
+          >
             <House className="size-10 text-brand-400" aria-hidden />
           </div>
         )}
-        {item.isTopped && (
+        {dealLabel && (
+          <span className="absolute inset-0 flex items-center justify-center">
+            <span className="rounded-sm bg-heading/80 px-4 py-1.5 text-sm font-semibold tracking-wide text-white uppercase">
+              {dealLabel}
+            </span>
+          </span>
+        )}
+        {!dealLabel && item.isTopped && (
           <Badge variant="accent" className="absolute top-3 left-3">
             TOP
           </Badge>

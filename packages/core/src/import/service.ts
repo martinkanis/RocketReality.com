@@ -157,11 +157,7 @@ const municipalityColumns = {
 }
 
 const normalizeName = (value: string): string =>
-  value
-    .normalize('NFKD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLowerCase()
-    .trim()
+  value.normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase().trim()
 
 const escapeRegExp = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 

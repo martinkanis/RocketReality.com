@@ -4,6 +4,7 @@ import { buildListingSlug } from '@rocket/shared'
 import { and, eq, sql } from 'drizzle-orm'
 import { placeOrder } from '../billing/orders'
 import { recordRewardForPublishedListing } from '../rewards/payouts'
+import { canArchiveWithReason } from './withdrawal-lock'
 
 export class ListingNotFoundError extends Error {
   constructor(id: string) {
@@ -178,6 +179,11 @@ export async function archiveListing(
   const listing = await requireListing(id)
   if (listing.status !== 'active' && listing.status !== 'paused' && listing.status !== 'expired') {
     throw new ListingStateError(`Inzerát ve stavu '${listing.status}' nelze archivovat`)
+  }
+  if (!canArchiveWithReason(reason, listing.publishedAt)) {
+    throw new ListingStateError(
+      'Zveřejněný inzerát jde v prvních měsících stáhnout jen jako prodaný nebo pronajatý',
+    )
   }
   await db
     .update(listings)

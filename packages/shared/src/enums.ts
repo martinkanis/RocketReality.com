@@ -162,6 +162,20 @@ export const ARCHIVE_VISIBILITY_DAYS = 90
 /** Důvody archivace, po kterých inzerát zůstává v archivu — stažené nabídky tam nepatří. */
 export const PUBLIC_ARCHIVE_REASONS = ['prodano', 'pronajato'] as const
 
+/**
+ * Jak dlouho po označení „prodáno/pronajato“ zůstává inzerát přímo ve
+ * výpisech mezi aktivními (se štítkem a ztlumenou fotkou). Ukazuje
+ * návštěvníkům, že se tu obchoduje, a plní web obsahem.
+ */
+export const SOLD_LISTING_IN_RESULTS_DAYS = 14
+
+/**
+ * Zámek stažení: po tuto dobu od zveřejnění nejde inzerát archivovat jako
+ * „staženo inzerentem“ ani „jiné“ — jediný východ je prodáno/pronajato.
+ * Brání vybrání odměny a okamžitému zmizení inzerátu z webu.
+ */
+export const LISTING_WITHDRAWAL_LOCK_DAYS = 90
+
 export const ARCHIVE_REASONS = ['prodano', 'pronajato', 'stazeno_inzerentem', 'jine'] as const
 export type ArchiveReason = (typeof ARCHIVE_REASONS)[number]
 export const ARCHIVE_REASON_LABELS: Record<ArchiveReason, string> = {

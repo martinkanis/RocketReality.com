@@ -3,6 +3,7 @@ import type { ListingStatus } from '@rocket/shared'
 import { CheckCircle2, Eye, Plus } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { withdrawalLockedUntil } from '@rocket/core'
 import { formatCzechDate } from '@/features/my-listings/format-date'
 import {
   ActiveActions,
@@ -85,6 +86,7 @@ function ListingRowActions({ item }: { item: MyListingItem }) {
         <ActiveActions
           listingId={item.id}
           isTopped={item.toppedUntil !== null && item.toppedUntil > new Date()}
+          withdrawalLockedUntil={withdrawalLockedUntil(item.publishedAt)}
         />
       )
     case 'rejected':

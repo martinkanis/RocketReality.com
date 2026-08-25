@@ -6,6 +6,7 @@ import { EXPIRE_LISTINGS_CRON, expireListingsJob } from './jobs/expire-listings'
 import { IMPORT_MEDIA_SWEEP_CRON, importMediaSweepJob } from './jobs/import-media-sweep'
 import { MEDIA_SWEEP_CRON, mediaSweepJob } from './jobs/media-sweep'
 import { processPhotoJob } from './jobs/process-photo'
+import { REWARD_GUARD_CRON, rewardGuardJob } from './jobs/reward-guard'
 import { sendEmailJob } from './jobs/send-email'
 import { WATCHDOG_CRON, watchdogJob } from './jobs/watchdog'
 import { createLogger } from './logger'
@@ -67,12 +68,14 @@ async function main(): Promise<void> {
   await queue.register(mediaSweepJob)
   await queue.register(importMediaSweepJob)
   await queue.register(duplicateScanJob)
+  await queue.register(rewardGuardJob)
 
   await queue.schedule(expireListingsJob.name, EXPIRE_LISTINGS_CRON)
   await queue.schedule(watchdogJob.name, WATCHDOG_CRON)
   await queue.schedule(mediaSweepJob.name, MEDIA_SWEEP_CRON)
   await queue.schedule(importMediaSweepJob.name, IMPORT_MEDIA_SWEEP_CRON)
   await queue.schedule(duplicateScanJob.name, DUPLICATE_SCAN_CRON)
+  await queue.schedule(rewardGuardJob.name, REWARD_GUARD_CRON)
 
   const server = createHealthcheckServer()
   server.listen(HEALTHCHECK_PORT, () => {

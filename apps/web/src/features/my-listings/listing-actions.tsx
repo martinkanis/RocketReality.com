@@ -1,6 +1,6 @@
 'use client'
 
-import { ARCHIVE_REASONS, ARCHIVE_REASON_LABELS } from '@rocket/shared'
+import { ARCHIVE_REASONS, ARCHIVE_REASON_LABELS, PUBLIC_ARCHIVE_REASONS } from '@rocket/shared'
 import type { ArchiveReason } from '@rocket/shared'
 import { Archive, Pencil, RefreshCw, Rocket, Trash2 } from 'lucide-react'
 import Link from 'next/link'
@@ -106,10 +106,21 @@ export function DraftActions({ listingId }: { listingId: string }) {
   )
 }
 
-function ArchiveDialog({ listingId }: { listingId: string }) {
+interface ArchiveDialogProps {
+  listingId: string
+  /** Do kdy platí zámek stažení — stáhnout jde v té době jen jako prodáno/pronajato. */
+  withdrawalLockedUntil: Date | null
+}
+
+function ArchiveDialog({ listingId, withdrawalLockedUntil }: ArchiveDialogProps) {
   const [isDialogOpen, setDialogOpen] = useState(false)
   const [reason, setReason] = useState<ArchiveReason>('prodano')
   const { isPending, error, run } = useListingAction()
+  const isLocked = withdrawalLockedUntil !== null && withdrawalLockedUntil.getTime() > Date.now()
+
+  function isReasonLocked(archiveReason: ArchiveReason): boolean {
+    return isLocked && !(PUBLIC_ARCHIVE_REASONS as readonly string[]).includes(archiveReason)
+  }
 
   return (
     <Dialog open={isDialogOpen} onOpenChange={setDialogOpen}>
@@ -131,7 +142,8 @@ function ArchiveDialog({ listingId }: { listingId: string }) {
             <label
               key={archiveReason}
               className={cn(
-                'flex cursor-pointer items-center gap-3 rounded-md border p-3 transition-colors',
+                'flex items-center gap-3 rounded-md border p-3 transition-colors',
+                isReasonLocked(archiveReason) ? 'cursor-not-allowed opacity-50' : 'cursor-pointer',
                 reason === archiveReason
                   ? 'border-brand-400 bg-brand-50'
                   : 'border-border hover:bg-muted',
@@ -142,6 +154,7 @@ function ArchiveDialog({ listingId }: { listingId: string }) {
                 name="archiveReason"
                 value={archiveReason}
                 checked={reason === archiveReason}
+                disabled={isReasonLocked(archiveReason)}
                 onChange={() => setReason(archiveReason)}
                 className="accent-brand-500"
               />
@@ -151,6 +164,13 @@ function ArchiveDialog({ listingId }: { listingId: string }) {
             </label>
           ))}
         </div>
+        {isLocked && (
+          <p className="text-xs text-muted-foreground">
+            Zveřejněný inzerát jde stáhnout z jiných důvodů až od{' '}
+            {withdrawalLockedUntil.toLocaleDateString('cs-CZ')} — do té doby ho lze uzavřít jen jako
+            prodaný nebo pronajatý.
+          </p>
+        )}
         <ActionError error={error} />
         <DialogFooter>
           <DialogClose asChild>
@@ -173,7 +193,13 @@ function ArchiveDialog({ listingId }: { listingId: string }) {
   )
 }
 
-export function ActiveActions({ listingId, isTopped }: { listingId: string; isTopped: boolean }) {
+interface ActiveActionsProps {
+  listingId: string
+  isTopped: boolean
+  withdrawalLockedUntil: Date | null
+}
+
+export function ActiveActions({ listingId, isTopped, withdrawalLockedUntil }: ActiveActionsProps) {
   const { isPending, error, run } = useListingAction()
 
   return (
@@ -197,7 +223,7 @@ export function ActiveActions({ listingId, isTopped }: { listingId: string; isTo
           <RefreshCw />
           Prodloužit
         </Button>
-        <ArchiveDialog listingId={listingId} />
+        <ArchiveDialog listingId={listingId} withdrawalLockedUntil={withdrawalLockedUntil} />
       </div>
       <ActionError error={error} />
     </div>

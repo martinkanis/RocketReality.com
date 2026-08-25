@@ -1,4 +1,5 @@
 import { buildSpayd } from '@rocket/core'
+import { REWARD_PROTECTION_DAYS } from '@rocket/config'
 import { getDb, listings, rewardPayouts } from '@rocket/db'
 import { desc, eq, sql } from 'drizzle-orm'
 import QRCode from 'qrcode'
@@ -22,6 +23,9 @@ export default async function AdminRewardsPage() {
       listingTitle: listings.title,
       listingSlug: listings.slug,
       listingStatus: listings.status,
+      listingPublishedAt: listings.publishedAt,
+      listingStatusChangedAt: listings.statusChangedAt,
+      listingArchiveReason: listings.archiveReason,
       /** Kolikrát už stejný IBAN dostal (nebo má schválenou) odměnu — ochrana proti farmaření. */
       ibanPayoutCount: sql<number>`(
         SELECT count(*)::int FROM ${rewardPayouts} other
@@ -34,6 +38,21 @@ export default async function AdminRewardsPage() {
     .innerJoin(listings, eq(rewardPayouts.listingId, listings.id))
     .orderBy(desc(rewardPayouts.createdAt))
     .limit(100)
+
+  /**
+   * Prodáno/pronajato krátce po zveřejnění nárok automaticky neruší —
+   * inzerát zůstává veřejný. Rozhodnutí je na adminovi, tak ať to vidí.
+   */
+  function earlySoldDays(row: (typeof rows)[number]): number | null {
+    const isSoldOrRented =
+      row.listingArchiveReason === 'prodano' || row.listingArchiveReason === 'pronajato'
+    if (!isSoldOrRented || !row.listingPublishedAt || !row.listingStatusChangedAt) return null
+    const days = Math.floor(
+      (row.listingStatusChangedAt.getTime() - row.listingPublishedAt.getTime()) /
+        (24 * 3600 * 1000),
+    )
+    return days < REWARD_PROTECTION_DAYS ? days : null
+  }
 
   const detected = rows.filter((row) => row.status === 'detected')
   const approved = rows.filter((row) => row.status === 'approved')
@@ -79,6 +98,7 @@ export default async function AdminRewardsPage() {
                 listingSlug={row.listingSlug}
                 listingStatus={row.listingStatus}
                 ibanPayoutCount={row.ibanPayoutCount}
+                earlySoldDays={earlySoldDays(row)}
               />
             ))}
           </div>
